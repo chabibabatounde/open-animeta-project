@@ -52,7 +52,7 @@ module.exports = async function (req, res) {
       delete newUser.password;
 
       // Lien activation
-      let activationLink = `http://localhost:1337/user/activate/${activationToken}`;
+      let activationLink = await sails.helpers.baseurl()+'/user/activate/${activationToken}';
 
       let html = `
       <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">

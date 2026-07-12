@@ -26,7 +26,7 @@ module.exports = {
   fn: async function (inputs) {
     const nodemailer = require('nodemailer');
     let transporter = nodemailer.createTransport({
-      host: 'mail69.lwspanel.com', // ✅ IMPORTANT
+      host: 'mail69.lwspanel.com', // IMPORTANT
       port: 465,
       secure: true,
       auth: {
@@ -41,7 +41,6 @@ module.exports = {
       subject: inputs.subject,
       html: inputs.html
     });
-    // TODO
   }
 
 

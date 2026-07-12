@@ -1,0 +1,4 @@
+- Mot de passe BDD
+- Mot de passe SMTP
+- Clé JWT
+- base url
