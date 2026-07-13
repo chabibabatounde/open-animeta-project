@@ -20,9 +20,9 @@ module.exports = {
     },
   },
 
-
   fn: async function (inputs) {
     let token = inputs.req.headers.authorization;
+    console.log(token);
     if (!token) {
       let response = {
         info: 'Token required',

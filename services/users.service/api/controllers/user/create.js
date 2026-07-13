@@ -85,7 +85,7 @@ module.exports = async function (req, res) {
       // Envoi mail
       await sails.helpers.sendmail(post.email, subject, html);
 
-      delete(newUser.password)
+      delete(newUser.password);
       response.info = 'User created. Activation email sent to ' + post.email;
       response.data = newUser;
       responseStatus = 201;
