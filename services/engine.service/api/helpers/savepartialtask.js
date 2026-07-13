@@ -24,7 +24,7 @@ module.exports = {
 
   fn: async function (inputs) {
     let data = inputs.data
-    
+
     let partialTask = await PartialTask.create(
       {
         name : data.name,
@@ -37,14 +37,26 @@ module.exports = {
 
     for (let i = 0; i < data.partialActions.length; i++) {
       const element = data.partialActions[i];
-      let partialAction = await PartialAction.create({name:element.name, partialTask:partialTask.id}).fetch();
-      for (let j = 0; j < element.partialKnowledges.length; j++) {
-        ele = element.partialKnowledges[j]
-        ele.partialAction = partialAction.id;
-        partialKnowledge =  await PartialKnowledge.create(ele).fetch();
+      if ("parameters" in element) {
+          let action = await Action.create({
+            name :  element.name,
+            partialTask :  partialTask.id
+          }).fetch()
+          for (let i = 0; i < element.parameters.length; i++) {
+            let ele = element.parameters[i];
+            ele.action = action.id;
+            await Parameter.create(ele).fetch()
+          }
+      }
+      else{
+        let partialAction = await PartialAction.create({name:element.name, partialTask:partialTask.id}).fetch();
+        for (let j = 0; j < element.partialKnowledges.length; j++) {
+          ele = element.partialKnowledges[j]
+          ele.partialAction = partialAction.id;
+          partialKnowledge =  await PartialKnowledge.create(ele).fetch();
+        }
       }
     }
-
     return partialTask;
   }
 

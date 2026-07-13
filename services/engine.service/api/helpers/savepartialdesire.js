@@ -40,6 +40,7 @@ module.exports = {
       partialModel : inputs.model,
       perceptions : perceptions
     }).fetch();
+    
     for (let p = 0; p < data.partialKnowledges.length; p++) {
       const element = data.partialKnowledges[p];
       element.partialDesire = partialDesire.id;

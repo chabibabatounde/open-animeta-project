@@ -7,12 +7,12 @@
 
 module.exports = {
 
-  attributes: {
+    attributes: {
 
         //  ╔═╗╦═╗╦╔╦╗╦╔╦╗╦╦  ╦╔═╗╔═╗
         //  ╠═╝╠╦╝║║║║║ ║ ║╚╗╔╝║╣ ╚═╗
         //  ╩  ╩╚═╩╩ ╩╩ ╩ ╩ ╚╝ ╚═╝╚═╝
-        "name": {
+        "type": {
             type: "String"
         },
 
@@ -44,6 +44,11 @@ module.exports = {
             collection: "PartialAction",
             via: "partialTask"
         },
+
+        "actions": {
+            collection: "Action",
+            via: "partialTask"
+        }
 
         //  ╔═╗╔═╗╔═╗╔═╗╔═╗╦╔═╗╔╦╗╦╔═╗╔╗╔╔═╗
         //  ╠═╣╚═╗╚═╗║ ║║  ║╠═╣ ║ ║║ ║║║║╚═╗
