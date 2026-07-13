@@ -1,0 +1,9 @@
+[
+    {
+        "name" : "GetCloser",
+        "attributs" : [
+            {"name":"duration", "type":"int"},
+            {"name":"gap", "type":"float"}
+        ]
+    }
+]
