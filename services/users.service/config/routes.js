@@ -25,6 +25,9 @@ module.exports.routes = {
   'POST /user/login': { action: 'user/login'},
   'POST /user/auth': { action: 'user/auth'},
 
+  'GET /auth/:app': { action: 'user/authentication'},
+  'POST /auth/:app': { action: 'user/authentication'},
+
 
 
   /***************************************************************************

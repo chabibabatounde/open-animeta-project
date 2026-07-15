@@ -1,251 +1,593 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ANIMETA - Animal Behavior Modeling</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANIMETA — Multi-Agent Platform for Animal Behavior Modeling driven by metaheuristics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&family=Consolas&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
 </head>
-
-
-
 <body>
 
-    <div class="app-container">
+<!-- ═══ NAVIGATION ═══ -->
+<nav class="nav">
+<div class="nav-inner">
+<a href="#" class="nav-brand">
+    <!--div class="nav-logo">
+    <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="10" cy="10" r="4" fill="white"/>
+        <circle cx="10" cy="10" r="8" stroke="white" stroke-width="1.5" stroke-dasharray="2 2"/>
+        <circle cx="4" cy="7" r="1.5" fill="white"/>
+        <circle cx="16" cy="7" r="1.5" fill="white"/>
+        <circle cx="5" cy="15" r="1.5" fill="white"/>
+        <circle cx="15" cy="15" r="1.5" fill="white"/>
+    </svg>
+    </div-->
+    <span class="nav-name">ANI<span>META</span></span>
+</a>
+<ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#workflow">Workflow</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#cta" class="btn-nav">Get Started</a></li>
+</ul>
+</div>
+</nav>
 
-        <!-- ===================== TOP MENU ===================== -->
-        <div class="top-menu">
-            <div class="brand-logo">
-                <i class="bi bi-diagram-3-fill"></i>
-                <span>ANIMETA</span>
-            </div>
-
-            <div class="dropdown">
-                <button class="btn btn-menu dropdown-toggle" data-bs-toggle="dropdown">
-                    <i class="bi bi-folder2-open"></i> Projects
-                </button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#" id="btnNewProject"><i class="bi bi-file-plus me-2"></i>Nouveau projet</a></li>
-                    <li><a class="dropdown-item" href="#" id="btnOpenProject"><i class="bi bi-folder2-open me-2"></i>Ouvrir un projet</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="#" id="btnExportJSON"><i class="bi bi-download me-2"></i>Exporter</a></li>
-                    <li><a class="dropdown-item" href="#" id="btnImportJSON"><i class="bi bi-upload me-2"></i>Importer</a></li>
-                </ul>
-            </div>
-
-
-            <div class="dropdown">
-                <button class="btn btn-menu dropdown-toggle" data-bs-toggle="dropdown">
-                    <i class="bi bi-play-circle"></i> Recents
-                </button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#" id="btnRunSimulation"><i class="bi bi-play-fill me-2"></i> P1 </a></li>
-                    <li><a class="dropdown-item" href="#" id="btnRunSimulation"><i class="bi bi-play-fill me-2"></i> P2 </a></li>
-                    <li><a class="dropdown-item" href="#" id="btnRunSimulation"><i class="bi bi-play-fill me-2"></i> P3 </a></li>
-                </ul>
-            </div>
+<!-- ═══ HERO ═══ -->
+<section class="hero grid-bg">
+<div style="position:relative; z-index:1;">
 
 
-            <input type="file" id="fileImportInput" accept=".json" style="display:none;">
+<h1>Modeling Animal Behavior<br>with <span class="hl">Metaheuristics</span></h1>
 
-            <div class="dropdown">
-                <button class="btn btn-menu dropdown-toggle" data-bs-toggle="dropdown">
-                    <i class="bi bi-diagram-2"></i> Environment
-                </button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#" id="btnAutoLayout"><i class="bi bi-grid-3x3-gap me-2"></i>Create</a></li>
-                    <li><a class="dropdown-item" href="#" id="btnAutoLayout"><i class="bi bi-grid-3x3-gap me-2"></i>Load</a></li>
-                </ul>
-            </div>
+<p>ANIMETA is a research-driven platform that treats animal behavior modeling as an optimization problem. Design agents, build environments, and generate interpretable behavioral models using metaheuristics.</p>
 
-            <div class="dropdown">
-                <button class="btn btn-menu dropdown-toggle" data-bs-toggle="dropdown">
-                    <i class="bi bi-diagram-2"></i> Modeling
-                </button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#" id="btnAutoLayout"><i class="bi bi-grid-3x3-gap me-2"></i>Submit partialModel</a></li>
-                    <li><a class="dropdown-item" href="#" id="btnClearGraph"><i class="bi bi-trash3 me-2"></i>Effacer le graphe</a></li>
-                </ul>
-            </div>
+<div class="hero-actions">
+    <a href="#contribution" class="contribution-link btn btn-primary">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M8 2v12M2 8h12"/>
+    </svg>
+    Contribute Actions
+    </a>
+    <a href="#simulation" class="btn btn-secondary env-link">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
+        <circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/>
+    </svg>
+    Create Simulation
+    </a>
+    <a href="#modeling" class="btn btn-secondary modeling-link">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M2 12L8 3l6 9H2z"/><circle cx="8" cy="9" r="1.5" fill="currentColor"/>
+    </svg>
+    Modeling Project
+    </a>
+</div>
 
-            <button class="btn btn-save" id="btnSave"><i class="bi bi-save2"></i> Save</button>
-            <button class="btn btn-save" id="btnSave"><i class="bi bi-save2"></i> Verify</button>
-
-            <button class="btn btn-menu panel-toggle-btn ms-auto" id="toggleLeftPanel">
-                <i class="bi bi-list"></i> Composants
-            </button>
-            <button class="btn btn-menu panel-toggle-btn" id="toggleRightPanel">
-                <i class="bi bi-sliders"></i> Propriétés
-            </button>
-
-            <div class="top-menu-status">
-                <div class="status-dot"></div>
-                <span>Prêt</span>
-            </div>
+<!-- ANIMETA Architecture Flow Diagram -->
+<div class="hero-diagram">
+    <div class="diagram-flow">
+    <div class="diagram-step">
+        <div class="diagram-icon" style="background: rgba(13,148,136,0.1);">
+        <svg viewBox="0 0 22 22" fill="none" stroke="#0d9488" stroke-width="1.8">
+            <rect x="3" y="3" width="16" height="16" rx="3"/>
+            <path d="M8 8h6M8 11h4M8 14h5"/>
+        </svg>
         </div>
-
-        <!-- ===================== MIDDLE ROW ===================== -->
-        <div class="middle-row">
-
-            <!-- LEFT PANEL -->
-            <div class="left-panel" id="leftPanel">
-                <div class="panel-title"><i class="bi bi-boxes"></i> Composants disponibles</div>
-                <input type="text" class="search-box" id="componentSearch" placeholder="🔍 Rechercher un composant...">
-
-                <div class="component-item" draggable="true" data-type="PM">
-                    <div class="icon-badge">PM</div>
-                    <span>PartialModel</span>
-                </div>
-
-                <div class="component-item" draggable="true" data-type="P">
-                    <div class="icon-badge">P</div>
-                    <span>PERCEPTIONS</span>
-                </div>
-
-                <div class="component-item" draggable="true" data-type="Px">
-                    <div class="icon-badge">Px</div>
-                    <span>Perception</span>
-                </div>
-                <div class="component-item" draggable="true" data-type="Sx">
-                    <div class="icon-badge">Sx</div>
-                    <span>Sense</span>
-                </div>
-
-                <div class="component-item" draggable="true" data-type="D">
-                    <div class="icon-badge">D</div>
-                    <span>DESIRES</span>
-                </div>
-
-                <div class="component-item" draggable="true" data-type="PD">
-                    <div class="icon-badge">PD</div>
-                    <span>PartialDesire</span>
-                </div>
-                <div class="component-item" draggable="true" data-type="PT">
-                    <div class="icon-badge">PT</div>
-                    <span>PartialTask</span>
-                </div>
-                <div class="component-item" draggable="true" data-type="PA">
-                    <div class="icon-badge">PA</div>
-                    <span>PartialAction</span>
-                </div>
-                <div class="component-item" draggable="true" data-type="PK">
-                    <div class="icon-badge">PK</div>
-                    <span>PartialKnowledge</span>
-                </div>
-            </div>
-            
-            <script>
-
-                    const json_actions = `
-                    [   
-                        {
-                            "name" : "Eat",
-                            "id" : "Ax",
-                            "attributs" : [
-                                {"name":"duration", "type":"int"},
-                                {"name":"gap", "type":"float"}
-                            ]
-                        },
-                        {
-                            "name" : "GetCloser",
-                            "id" : "Ax",
-                            "attributs" : [
-                                {"name":"duration", "type":"int"},
-                                {"name":"gap", "type":"float"}
-                            ]
-                        },
-                        {
-                            "name" : "Sleep",
-                            "id" : "Ax",
-                            "attributs" : [
-                                {"name":"duration", "type":"int"},
-                                {"name":"gap", "type":"float"}
-                            ]
-                        }
-                            ,
-                        {
-                            "name" : "RandomMove",
-                            "id" : "Ax",
-                            "attributs" : [
-                                {"name":"duration", "type":"int"},
-                                {"name":"gap", "type":"float"}
-                            ]
-                        }
-                            ,
-                        {
-                            "name" : "RunAway",
-                            "id" : "Ax",
-                            "attributs" : [
-                                {"name":"duration", "type":"int"},
-                                {"name":"gap", "type":"float"}
-                            ]
-                        }
-                    ]
-                    `
-                    const actions = JSON.parse(json_actions);
-                    for (let i = 0; i < actions.length; i++) {
-                        const element = actions[i];
-                        let code = '<div class="component-item" draggable="true" data-type="'+element.id+'"> <div class="icon-badge">'+element.id+'</div><span>'+element.name+'</span></div>'
-                        document.getElementById('leftPanel').innerHTML += code
-                    }
-
-                </script>
-
-
-            <!-- CENTER PANEL -->
-            <div class="center-panel" id="centerPanelWrapper">
-                <div class="center-panel-toolbar">
-                    <button class="toolbar-btn" id="zoomIn"><i class="bi bi-zoom-in"></i></button>
-                    <button class="toolbar-btn" id="zoomOut"><i class="bi bi-zoom-out"></i></button>
-                    <button class="toolbar-btn" id="resetZoom"><i class="bi bi-aspect-ratio"></i> Reset</button>
-                    <div class="toolbar-hint">
-                        <span><kbd>Double-clic</kbd> = créer connexion</span>
-                        <span><kbd>Clic</kbd> = sélectionner</span>
-                    </div>
-                </div>
-                <div id="graphCanvas">
-                    <svg class="connections-layer" id="connectionsSvg"></svg>
-                    <div class="canvas-empty-hint" id="emptyHint">
-                        <i class="bi bi-cursor"></i>
-                        Glissez un composant ici pour commencer
-                    </div>
-                </div>
-            </div>
-
-            <!-- RIGHT PANEL -->
-            <div class="right-panel" id="rightPanel">
-                <div class="panel-title"><i class="bi bi-sliders"></i> Propriétés</div>
-                <div id="noSelectionMsg">
-                    <i class="bi bi-hand-index-thumb"></i>
-                    Sélectionnez un composant dans le graphe pour éditer ses propriétés
-                </div>
-                <div id="propertiesForm" style="display:none;"></div>
-            </div>
-
+        <div class="diagram-label">Input</div>
+        <div class="diagram-title">Observational Data</div>
+        <div class="diagram-desc">Sensors, video tracking, field records</div>
+    </div>
+    <div class="diagram-step">
+        <div class="diagram-icon" style="background: rgba(37,99,235,0.1);">
+        <svg viewBox="0 0 22 22" fill="none" stroke="#2563eb" stroke-width="1.8">
+            <path d="M4 10 Q11 3 18 10 Q11 17 4 10Z"/><circle cx="11" cy="10" r="2.5"/>
+        </svg>
         </div>
-
-        <!-- ===================== BOTTOM PANEL ===================== -->
-        <div class="bottom-panel">
-            <div class="console-header">
-                <div class="console-tab active"><i class="bi bi-terminal"></i> Console</div>
-                <div class="console-tab"><i class="bi bi-exclamation-triangle"></i> Problèmes</div>
-                <button class="console-clear-btn" id="clearConsole"><i class="bi bi-trash3"></i> Effacer</button>
-            </div>
-            <div class="console-body" id="consoleLog"></div>
+        <div class="diagram-label">Model</div>
+        <div class="diagram-title">ANIMETA-MOD</div>
+        <div class="diagram-desc">Generic behavioral model from elementary actions</div>
+    </div>
+    <div class="diagram-step">
+        <div class="diagram-icon" style="background: rgba(5,150,105,0.1);">
+        <svg viewBox="0 0 22 22" fill="none" stroke="#059669" stroke-width="1.8">
+            <circle cx="6" cy="8" r="2.5"/><circle cx="16" cy="8" r="2.5"/>
+            <circle cx="11" cy="16" r="2.5"/>
+            <path d="M8 8L14 8M8 11l-1-3 3 1M14 11l1-3-3 1M11 13.5V9"/>
+        </svg>
         </div>
+        <div class="diagram-label">Simulation</div>
+        <div class="diagram-title">ANIMETA-SMA</div>
+        <div class="diagram-desc">Multi-agent environment for model execution</div>
+    </div>
+    <div class="diagram-step">
+        <div class="diagram-icon" style="background: rgba(99,53,246,0.1);">
+        <svg viewBox="0 0 22 22" fill="none" stroke="#7c3aed" stroke-width="1.8">
+            <path d="M4 6 Q11 14 18 6"/><path d="M4 11 Q11 19 18 11"/>
+            <path d="M4 16 Q11 6 18 16"/>
+            <circle cx="11" cy="11" r="3" fill="none"/>
+        </svg>
+        </div>
+        <div class="diagram-label">Optimize</div>
+        <div class="diagram-title">ANIMETA-ENGINE</div>
+        <div class="diagram-desc">Metaheuristic-driven parameter search</div>
+    </div>
+    <div class="diagram-step">
+        <div class="diagram-icon" style="background: rgba(13,148,136,0.1);">
+        <svg viewBox="0 0 22 22" fill="none" stroke="#0d9488" stroke-width="1.8">
+            <path d="M3 16L7 10l4 3 4-7 4 4"/><path d="M3 19h16"/>
+            <path d="M7 16v-3M11 16v-4M15 16v-5"/>
+        </svg>
+        </div>
+        <div class="diagram-label">Output</div>
+        <div class="diagram-title">Interpretable Model</div>
+        <div class="diagram-desc">Behavioral rules with quantified parameters</div>
+    </div>
+    </div>
+    <!--div class="diagram-legend">
+    <span class="legend-item"><span class="legend-dot" style="background:#0d9488;"></span>ANIMETA-MOD</span>
+    <span class="legend-item"><span class="legend-dot" style="background:#059669;"></span>ANIMETA-SMA</span>
+    <span class="legend-item"><span class="legend-dot" style="background:#7c3aed;"></span>ANIMETA-ENGINE</span>
+    </div-->
+</div>
+</div>
+</section>
 
+<!-- ═══ PLATFORM COMPONENTS STRIP ═══ -->
+<!--div class="components-strip">
+<div class="components-strip-inner">
+<span class="components-label">Platform Components</span>
+<a href="#" class="component-chip"><span class="chip-prefix">→</span>ANIMETA-MOD</a>
+<a href="#" class="component-chip"><span class="chip-prefix">→</span>ANIMETA-SMA</a>
+<a href="#" class="component-chip"><span class="chip-prefix">→</span>ANIMETA-ENGINE</a>
+<a href="#" class="component-chip"><span class="chip-prefix">→</span>ANIMETA-HIM</a>
+<a href="#" class="component-chip"><span class="chip-prefix">→</span>ANIMETA-API</a>
+<a href="#contribution" class="component-chip" style="border-color: var(--accent-teal); color: var(--accent-teal);">
+    <span class="chip-prefix">+</span>Collaborative Action Base
+</a>
+</div>
+</div-->
+
+<!-- ═══ ABOUT ═══ -->
+<section class="section" id="about">
+<div class="section-inner">
+<div class="section-header">
+    <span class="section-tag">Overview</span>
+    <h2 class="section-title">A New Approach to Animal Behavior Modeling</h2>
+    <p class="section-subtitle">Unlike conventional deep learning approaches, ANIMETA frames behavioral modeling as an optimization problem — producing models that are both accurate and human-interpretable.</p>
+</div>
+
+<div class="pillars-grid">
+    <!-- Pillar 1: Contribute -->
+    <a href="#contribution" class="pillar-card contribution-link" id="contribution">
+    <div class="pillar-num">01 — Contribute</div>
+    <div class="pillar-icon" style="background: rgba(13,148,136,0.08);">
+        <svg viewBox="0 0 26 26" fill="none" stroke="#0d9488" stroke-width="1.8">
+        <rect x="4" y="4" width="18" height="18" rx="4"/>
+        <path d="M13 9v8M9 13h8"/>
+        <circle cx="19" cy="19" r="4" fill="#0d9488" stroke="none"/>
+        <path d="M17.5 19h3M19 17.5v3" stroke="white" stroke-width="1.5"/>
+        </svg>
+    </div>
+    <h3>Contribute an Action</h3>
+    <p>Propose and submit elementary actions to expand the platform's behavioral building block library. Community contributions enrich the simulation capabilities.</p>
+    <div class="pillar-tags">
+        <span class="tag">Action DB</span>
+        <span class="tag">Community</span>
+        <span class="tag">XML Schema</span>
+        <span class="tag">Validation</span>
+    </div>
+    <span class="pillar-arrow">
+        Open Contribution Portal
+        <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M2 7h10M8 3l4 4-4 4"/>
+        </svg>
+    </span>
+    </a>
+
+    <!-- Pillar 2: Create Simulation -->
+    <a href="#simulation" class="pillar-card env-link" id="simulation">
+    <div class="pillar-num">02 — Simulate</div>
+    <div class="pillar-icon" style="background: rgba(37,99,235,0.08);">
+        <svg viewBox="0 0 26 26" fill="none" stroke="#2563eb" stroke-width="1.8">
+        <circle cx="13" cy="13" r="9"/>
+        <circle cx="8" cy="10" r="2" fill="#2563eb"/>
+        <circle cx="17" cy="8" r="1.5" fill="#2563eb"/>
+        <circle cx="15" cy="17" r="1.5" fill="#2563eb"/>
+        <path d="M8 10 Q13 14 15 17" stroke-dasharray="2 1.5"/>
+        <path d="M17 8 Q12 12 8 10"/>
+        </svg>
+    </div>
+    <h3>Create a Simulation</h3>
+    <p>Design agents with specific behavioral models, define their environment, set spatial parameters, and launch multi-agent simulations powered by ANIMETA-SMA.</p>
+    <div class="pillar-tags">
+        <span class="tag">Agents</span>
+        <span class="tag">Environment</span>
+        <span class="tag">MAS</span>
+        <span class="tag">Time-Step</span>
+    </div>
+    <span class="pillar-arrow">
+        Open Simulation Builder
+        <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M2 7h10M8 3l4 4-4 4"/>
+        </svg>
+    </span>
+    </a>
+
+    <!-- Pillar 3: Modeling Project -->
+    <a href="#modeling" class="pillar-card modeling-link" id="modeling">
+    <div class="pillar-num">03 — Optimize</div>
+    <div class="pillar-icon" style="background: rgba(99,53,246,0.08);">
+        <svg viewBox="0 0 26 26" fill="none" stroke="#7c3aed" stroke-width="1.8">
+        <path d="M5 19L10 10l4 5 4-9 3 7"/>
+        <path d="M5 22h16"/>
+        <circle cx="13" cy="8" r="3"/>
+        <path d="M13 5v-2M13 11v2M10 8h-2M16 8h2"/>
+        </svg>
+    </div>
+    <h3>Modeling Project</h3>
+    <p>Input observational data, configure optimization parameters, and submit your modeling project. ANIMETA-ENGINE uses metaheuristics to generate an interpretable behavioral model.</p>
+    <div class="pillar-tags">
+        <span class="tag">Metaheuristics</span>
+        <span class="tag">Fitness Func.</span>
+        <span class="tag">Search Space</span>
+        <span class="tag">Convergence</span>
+    </div>
+    <span class="pillar-arrow">
+        Open Modeling Studio
+        <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M2 7h10M8 3l4 4-4 4"/>
+        </svg>
+    </span>
+    </a>
+</div>
+</div>
+</section>
+
+<!--div class="divider"></div-->
+
+<!-- ═══ LIVE SIMULATION CANVAS ═══ -->
+<!--section class="section" style="background: var(--bg-secondary); padding-top: 70px; padding-bottom: 70px;">
+<div class="section-inner">
+<div class="section-header">
+    <span class="section-tag">Interactive Demo</span>
+    <h2 class="section-title">Multi-Agent Simulation Preview</h2>
+    <p class="section-subtitle">An interactive demonstration of ANIMETA-SMA in action. Place agents, set targets, and observe emergent behavioral patterns.</p>
+</div>
+
+<div class="canvas-container">
+    <div class="canvas-box">
+    <div class="canvas-toolbar">
+        <span class="toolbar-label">ANIMETA-SMA SIMULATOR</span>
+        <div class="toolbar-divider"></div>
+        <span class="canvas-badge"><span class="blink"></span>LIVE</span>
+        <div class="toolbar-divider"></div>
+        <button class="btn-tool" id="btn-reset">
+        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 6a4 4 0 1 1 .8 2.4M2 6V3m0 3h3"/></svg>
+        Reset
+        </button>
+        <button class="btn-tool" id="btn-pause">
+        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="2" width="3" height="8" rx="1"/><rect x="7" y="2" width="3" height="8" rx="1"/></svg>
+        Pause
+        </button>
+        <button class="btn-tool" id="btn-add-agent">
+        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="6" r="4"/><path d="M6 4v4M4 6h4"/></svg>
+        Add Agent
+        </button>
+        <div class="toolbar-divider"></div>
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color: var(--text-muted);">
+        Agent count:
+        </span>
+        <input type="range" id="agentSlider" min="1" max="20" value="5" style="width:80px; accent-color:var(--accent-teal);">
+        <span id="agentCount" style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--accent-teal); font-weight:600;">5</span>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <canvas id="simCanvas" width="960" height="400"></canvas>
 
+    <div class="canvas-statusbar">
+        <div class="status-left">
+        <span class="status-item">Agents: <span class="status-val" id="statAgents">0</span></span>
+        <span class="status-item">Step: <span class="status-val" id="statStep">0</span></span>
+        <span class="status-item">Collisions: <span class="status-val" id="statCollisions">0</span></span>
+        </div>
+        <div class="status-right">
+        <span class="status-item">Mode: <span class="status-val">ANIMETA-SMA v1.0</span></span>
+        <span class="status-item">Engine: <span class="status-val">Time-Driven</span></span>
+        </div>
+    </div>
+    </div>
+</div>
+</div>
+</section-->
+
+<div class="divider"></div>
+
+<!-- ═══ ARCHITECTURE ═══ -->
+<section class="section" id="architecture">
+<div class="section-inner">
+<div class="section-header">
+    <span class="section-tag">System Architecture</span>
+    <h2 class="section-title">ANIMETA Suite Components</h2>
+    <p class="section-subtitle">A complete toolchain from data input to interpretable behavioral models, built on a multi-agent simulation backbone.</p>
+</div>
+
+<div class="arch-grid">
+    <div class="arch-text">
+    <p>The ANIMETA system was designed and validated through rigorous verification and validation procedures, ensuring reliability for scientific modeling tasks in ethology and behavioral ecology.</p>
+    <p>At its core, ANIMETA treats the behavioral modeling problem as a <strong>simulation-based optimization</strong> task: a database of elementary actions serves as the search space, and metaheuristics drive the exploration for the best action sequences and parameters.</p>
+    <p>The platform has been validated against established benchmarks and tested on real observational data, including direct field observations of <em>Sciaena umbra</em> (brown grouper) and controlled pig behavior studies.</p>
+    </div>
+    <div class="arch-highlights">
+    <div class="arch-highlight">
+        <div class="arch-highlight-name">ANIMETA-MOD</div>
+        <div class="arch-highlight-desc">Generic behavioral model representation based on chained elementary actions with configurable parameters.</div>
+    </div>
+    <div class="arch-highlight">
+        <div class="arch-highlight-name">ANIMETA-SMA</div>
+        <div class="arch-highlight-desc">Multi-agent simulation system that executes ANIMETA-MOD instances in a spatial, time-driven environment.</div>
+    </div>
+    <div class="arch-highlight">
+        <div class="arch-highlight-name">ANIMETA-ENGINE</div>
+        <div class="arch-highlight-desc">Metaheuristic optimization core — selects optimal actions and parameters to best reproduce observed behavior.</div>
+    </div>
+    <div class="arch-highlight">
+        <div class="arch-highlight-name">ANIMETA-HIM</div>
+        <div class="arch-highlight-desc">Human-interface module — clean, streamlined, and intuitive UI designed for non-computer-expert users such as biologists.</div>
+    </div>
+    <!--div class="arch-highlight" style="grid-column: span 2;">
+        <div class="arch-highlight-name">ANIMETA-API</div>
+        <div class="arch-highlight-desc">Programmatic interface enabling integration with external tools, data pipelines, and third-party systems.</div>
+    </div-->
+    </div>
+</div>
+
+<!--div class="species-list" style="margin-top: 40px;">
+    <div class="species-card">
+    <div class="species-emoji">🐟</div>
+    <div class="species-name">Brown Grouper</div>
+    <div class="species-latin">Sciaena umbra</div>
+    </div>
+    <div class="species-card">
+    <div class="species-emoji">🐷</div>
+    <div class="species-name">Domestic Pig</div>
+    <div class="species-latin">Sus scrofa domesticus</div>
+    </div>
+    <div class="species-card">
+    <div class="species-emoji">🐦</div>
+    <div class="species-name">Flock (Starlings)</div>
+    <div class="species-latin">Sturnus vulgaris</div>
+    </div>
+    <div class="species-card">
+    <div class="species-emoji">🐝</div>
+    <div class="species-name">Bee Colony</div>
+    <div class="species-latin">Apis mellifera</div>
+    </div>
+</div-->
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══ WORKFLOW ═══ -->
+<section class="section" id="workflow">
+<div class="section-inner">
+<div class="section-header">
+    <span class="section-tag">Process</span>
+    <h2 class="section-title">Modeling Workflow</h2>
+    <p class="section-subtitle">From raw observational data to an interpretable behavioral model in four stages, powered by simulation-based optimization.</p>
+</div>
+
+<div class="workflow-steps">
+    <div class="workflow-step">
+    <div class="workflow-num">1</div>
+    <h4>Data Collection</h4>
+    <p>Gather behavioral data via sensors, video tracking, or direct field observations of the target species.</p>
+    </div>
+    <div class="workflow-step">
+    <div class="workflow-num">2</div>
+    <h4>Model Configuration</h4>
+    <p>Define the search space: select elementary actions, set parameter bounds, and choose a metaheuristic strategy.</p>
+    </div>
+    <div class="workflow-step">
+    <div class="workflow-num">3</div>
+    <h4>Optimization Loop</h4>
+    <p>ANIMETA-ENGINE runs the simulation iteratively, evaluating candidate solutions against the observed data until convergence.</p>
+    </div>
+    <div class="workflow-step">
+    <div class="workflow-num">4</div>
+    <h4>Model Output</h4>
+    <p>The best action sequence and parameters are extracted as an interpretable, reusable behavioral model.</p>
+    </div>
+</div>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══ FEATURES ═══ -->
+<section class="section" id="features">
+<div class="section-inner">
+<div class="section-header">
+    <span class="section-tag">Capabilities</span>
+    <h2 class="section-title">Platform Features</h2>
+    <p class="section-subtitle">Built for researchers and modelers who need interpretable, explainable animal behavior models without deep computer science expertise.</p>
+</div>
+
+<div class="features-grid">
+    <div class="feature-item">
+    <div class="feature-icon">
+        <svg viewBox="0 0 20 20" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 10l5 5 9-9"/>
+        </svg>
+    </div>
+    <div class="feature-text">
+        <h4>Elementary Action Library</h4>
+        <p>Expandable database of primitive behavioral actions that agents can execute. Contribute new actions through the portal.</p>
+    </div>
+    </div>
+    
+    <div class="feature-item">
+    <div class="feature-icon">
+        <svg viewBox="0 0 20 20" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 14 Q10 4 16 14"/><path d="M4 17h12"/>
+        </svg>
+    </div>
+    <div class="feature-text">
+        <h4>Metaheuristic Optimization</h4>
+        <p>ANIMETA-ENGINE integrates multiple metaheuristic algorithms for efficient exploration of the behavioral parameter space.</p>
+    </div>
+    </div>
+    <div class="feature-item">
+    <div class="feature-icon">
+        <svg viewBox="0 0 20 20" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="14" height="14" rx="2"/><path d="M7 10h6M7 13h4"/>
+        </svg>
+    </div>
+    <div class="feature-text">
+        <h4>Interpretable Outputs</h4>
+        <p>Behavioral models are expressed as human-readable action sequences — no black-box inference, only explainable rules.</p>
+    </div>
+    </div>
+    <div class="feature-item">
+    <div class="feature-icon">
+        <svg viewBox="0 0 20 20" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 16L8 8l4 5 4-9 4 6"/>
+        </svg>
+    </div>
+    <div class="feature-text">
+        <h4>Fitness Evaluation</h4>
+        <p>Configurable evaluation functions measure how closely a simulated behavior matches the observed data target trajectories.</p>
+    </div>
+    </div>
+    <div class="feature-item">
+    <div class="feature-icon">
+        <svg viewBox="0 0 20 20" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10 3v14M3 10h14"/><circle cx="10" cy="10" r="3"/>
+        </svg>
+    </div>
+    <div class="feature-text">
+        <h4>Cross-Platform API</h4>
+        <p>ANIMETA-API enables programmatic access for integration into scientific workflows, data pipelines, and external tools.</p>
+    </div>
+    </div>
+    <div class="feature-item">
+    <div class="feature-icon">
+        <svg viewBox="0 0 20 20" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="6" cy="8" r="2.5"/><circle cx="14" cy="8" r="2.5"/>
+        <circle cx="10" cy="14" r="2.5"/>
+        <path d="M8 8h4M8 11l-2-3 4 1.5M12 11l2-3-4 1.5"/>
+        </svg>
+    </div>
+    <div class="feature-text">
+        <h4>Multi-Agent Environment</h4>
+        <p>Place multiple autonomous agents in a spatial environment. Each agent follows its own behavioral model with agent-to-agent interactions.</p>
+    </div>
+    </div>
+</div>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══ CTA ═══ -->
+<section class="section" id="cta">
+<div class="section-inner">
+<div class="cta-box">
+    <h2>Ready to model animal behavior?</h2>
+    <p>Start by exploring the platform tools or submit your own elementary action to the collaborative library.</p>
+    <div class="cta-buttons">
+    <a href="#contribution" class="btn btn-primary contribution-link">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
+        <rect x="2" y="2" width="12" height="12" rx="3"/>
+        <path d="M8 5v6M5 8h6"/>
+        </svg>
+        Contribute an Action
+    </a>
+    <a href="#simulation" class="btn btn-secondary env-link">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
+        <circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/>
+        </svg>
+        Create Simulation
+    </a>
+    <a href="#modeling" class="btn btn-secondary modeling-link">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M2 12L8 3l6 9H2z"/>
+        </svg>
+        New Modeling Project
+    </a>
+    </div>
+</div>
+</div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+<div class="footer-inner">
+<div class="footer-top">
+    <div>
+    <a href="#" class="nav-brand" style="margin-bottom: 4px;">
+        <!--div class="nav-logo">
+        <svg viewBox="0 0 20 20" fill="none">
+            <circle cx="10" cy="10" r="4" fill="white"/>
+            <circle cx="10" cy="10" r="8" stroke="white" stroke-width="1.5" stroke-dasharray="2 2"/>
+            <circle cx="4" cy="7" r="1.5" fill="white"/>
+            <circle cx="16" cy="7" r="1.5" fill="white"/>
+            <circle cx="5" cy="15" r="1.5" fill="white"/>
+            <circle cx="15" cy="15" r="1.5" fill="white"/>
+        </svg>
+        </div-->
+        <span class="nav-name">ANI<span>META</span></span>
+    </a>
+    <p class="footer-brand-desc">A research platform for multi-agent simulation of animal behavior, guided by metaheuristic optimization. Developed at the intersection of computer science and ethology.</p>
+    </div>
+    <div class="footer-cols">
+    <div class="footer-col">
+        <h5>Platform Tools</h5>
+        <ul>
+        <li><a href="#contribution" class="contribution-link">Contribute an Action</a></li>
+        <li><a href="#simulation" class="env-link">Create Simulation</a></li>
+        <li><a href="#modeling" class="modeling-link">Modeling Project</a></li>
+        </ul>
+    </div>
+    <!--div class="footer-col">
+        <h5>Components</h5>
+        <ul>
+        <li><a href="#">ANIMETA-MOD</a></li>
+        <li><a href="#">ANIMETA-SMA</a></li>
+        <li><a href="#">ANIMETA-ENGINE</a></li>
+        <li><a href="#">ANIMETA-API</a></li>
+        </ul>
+    </div-->
+    <div class="footer-col">
+        <h5>Research</h5>
+        <ul>
+        <li><a target="_blank" href="https://www.researchgate.net/profile/Chabi-Babatounde">Publications</a></li>
+        <li><a target="_blank" href="https://stellamare.universita.corsica/">UAR STELLA MARE</a></li>
+        <li><a target="_blank" href="https://spe.universita.corsica/">UMR CNRS 6134</a></li>
+        </ul>
+    </div>
+    </div>
+</div>
+<div class="footer-bottom">
+    <p>&copy; 2024 ANIMETA Platform — Chabi Affolabi Rodolpho Babatounde — PhD Research Project</p>
+    <div class="footer-meta">
+    <span>
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="6" r="4"/><path d="M6 4v2l1.5 1.5"/></svg>
+        University of Corsica — UMR CNRS 6134 SPE
+    </span>
+    <span>
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 9L6 5l2 2 2-4 2 3"/><path d="M2 11h8"/></svg>
+        STELLA MARE
+    </span>
+    </div>
+</div>
+</div>
+</footer>
     <script src="script.js"></script>
 
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>

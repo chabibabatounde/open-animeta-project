@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ANIMETA - Animal Behavior Modeling</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&family=Consolas&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+
+
+<body>
+
+    <div class="app-container">
+
+        <!-- ===================== TOP MENU ===================== -->
+        <div class="top-menu">
+            <div class="brand-logo">
+                <i class="bi bi-diagram-3-fill"></i>
+                <span>ANIMETA</span>
+            </div>
+
+            <div class="dropdown">
+                <button class="btn btn-menu dropdown-toggle" data-bs-toggle="dropdown">
+                    <i class="bi bi-folder2-open"></i> Projects
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#" id="btnNewProject"><i class="bi bi-file-plus me-2"></i>Nouveau projet</a></li>
+                    <li><a class="dropdown-item" href="#" id="btnOpenProject"><i class="bi bi-folder2-open me-2"></i>Ouvrir un projet</a></li>
+                    <li><a class="dropdown-item" href="#" id="btnExportJSON"><i class="bi bi-download me-2"></i>Exporter le projet</a></li>
+                </ul>
+            </div>
+
+
+            <div class="dropdown">
+                <button class="btn btn-menu dropdown-toggle" data-bs-toggle="dropdown">
+                    <i class="bi bi-play-circle"></i> Recents
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#" id="btnRunSimulation"><i class="bi bi-arrow-counterclockwise me-2" ></i> P1 </a></li>
+                </ul>
+            </div>
+
+
+            <input type="file" id="fileImportInput" accept=".json" style="display:none;">
+
+            <div class="dropdown">
+                <button class="btn btn-menu dropdown-toggle" data-bs-toggle="dropdown">
+                    <i class="bi bi-diagram-2"></i> Environment
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#" id="btnAutoLayout"><i class="bi bi-clipboard-plus me-2"></i></i>Create</a></li>
+                    <li><a class="dropdown-item" href="#" id="btnAutoLayout"><i class="bi bi-arrow-down-right-square me-2"></i></i>Load</a></li>
+                </ul>
+            </div>
+
+            <div class="dropdown">
+                <button class="btn btn-menu dropdown-toggle" data-bs-toggle="dropdown">
+                    <i class="bi bi-diagram-2"></i> Modeling
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#" id="btnAutoLayout"><i class="bi bi-send-check me-2"></i>Submit partialModel</a></li>
+                    <li><a class="dropdown-item" href="#" id="btnClearGraph"><i class="bi bi-trash3 me-2"></i>Effacer le graphe</a></li>
+                </ul>
+            </div>
+
+            <button class="btn btn-save" id="btnSave"><i class="bi bi-save2"></i> Save</button>
+            <button class="btn btn-verify" id="btnVerify"><i class="bi bi-card-checklist"></i> Verify</button>
+
+            <button class="btn btn-menu panel-toggle-btn ms-auto" id="toggleLeftPanel">
+                <i class="bi bi-list"></i> Composants
+            </button>
+            <button class="btn btn-menu panel-toggle-btn" id="toggleRightPanel">
+                <i class="bi bi-sliders"></i> Propriétés
+            </button>
+
+            <div class="top-menu-status" style="border: 1px solid white; padding: 7px; border-radius: 4px; cursor: pointer;">
+                <div class="status-dot"></div>
+                <span>Log out</span>
+            </div>
+        </div>
+
+        <!-- ===================== MIDDLE ROW ===================== -->
+        <div class="middle-row">
+
+            <!-- LEFT PANEL -->
+            <div class="left-panel" id="leftPanel">
+                <div class="panel-title"><i class="bi bi-boxes"></i> Composants disponibles</div>
+                <input type="text" class="search-box" id="componentSearch" placeholder="🔍 Rechercher un composant...">
+
+                <div class="component-item" draggable="true" data-type="PM">
+                    <div class="icon-badge">PM</div>
+                    <span>PartialModel</span>
+                </div>
+
+                <div class="component-item" draggable="true" data-type="P">
+                    <div class="icon-badge">P</div>
+                    <span>PERCEPTIONS</span>
+                </div>
+
+                <div class="component-item" draggable="true" data-type="Px">
+                    <div class="icon-badge">Px</div>
+                    <span>Perception</span>
+                </div>
+                <div class="component-item" draggable="true" data-type="Sx">
+                    <div class="icon-badge">Sx</div>
+                    <span>Sense</span>
+                </div>
+
+                <div class="component-item" draggable="true" data-type="D">
+                    <div class="icon-badge">D</div>
+                    <span>DESIRES</span>
+                </div>
+
+                <div class="component-item" draggable="true" data-type="PD">
+                    <div class="icon-badge">PD</div>
+                    <span>PartialDesire</span>
+                </div>
+                <div class="component-item" draggable="true" data-type="PT">
+                    <div class="icon-badge">PT</div>
+                    <span>PartialTask</span>
+                </div>
+                <div class="component-item" draggable="true" data-type="PA">
+                    <div class="icon-badge">PA</div>
+                    <span>PartialAction</span>
+                </div>
+                <div class="component-item" draggable="true" data-type="PK">
+                    <div class="icon-badge">PK</div>
+                    <span>PartialKnowledge</span>
+                </div>
+            </div>
+            
+            <!-- CENTER PANEL -->
+            <div class="center-panel" id="centerPanelWrapper">
+                <div class="center-panel-toolbar">
+                    <button class="toolbar-btn" id="zoomIn"><i class="bi bi-zoom-in"></i></button>
+                    <button class="toolbar-btn" id="zoomOut"><i class="bi bi-zoom-out"></i></button>
+                    <button class="toolbar-btn" id="resetZoom"><i class="bi bi-aspect-ratio"></i> Reset</button>
+                    <div class="toolbar-hint">
+                        <span><kbd>Double-clic</kbd> = créer connexion</span>
+                        <span><kbd>Clic</kbd> = sélectionner</span>
+                    </div>
+                </div>
+                <div id="graphCanvas">
+                    <svg class="connections-layer" id="connectionsSvg"></svg>
+                    <div class="canvas-empty-hint" id="emptyHint">
+                        <i class="bi bi-cursor"></i>
+                        Glissez un composant ici pour commencer
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT PANEL -->
+            <div class="right-panel" id="rightPanel">
+                <div class="panel-title"><i class="bi bi-sliders"></i> Propriétés</div>
+                <div id="noSelectionMsg">
+                    <i class="bi bi-hand-index-thumb"></i>
+                    Sélectionnez un composant dans le graphe pour éditer ses propriétés
+                </div>
+                <div id="propertiesForm" style="display:none;"></div>
+            </div>
+
+        </div>
+
+        <!-- ===================== BOTTOM PANEL ===================== -->
+        <div class="bottom-panel">
+            <div class="console-header">
+                <div class="console-tab active"><i class="bi bi-terminal"></i> Console</div>
+                <button class="console-clear-btn" id="clearConsole"><i class="bi bi-trash3"></i> Effacer</button>
+            </div>
+            <div class="console-body" id="consoleLog"></div>
+        </div>
+
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="nodeverification.js"></script>
+    <script src="script.js"></script>
+
+</body>
+</html>

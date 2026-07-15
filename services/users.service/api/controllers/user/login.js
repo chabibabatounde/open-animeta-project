@@ -32,8 +32,7 @@ module.exports = async function (req, res) {
 
     // check password
     let match = await sails.helpers.saltpassword(password) == user.password;
-    console.log(await sails.helpers.saltpassword(password))
-
+    
     if (!match) {
       response.info = 'Invalid credentials';
       responseStatus = 401;
