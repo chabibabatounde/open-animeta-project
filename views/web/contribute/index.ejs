@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Propose an Elementary Action — ANIMETA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles/contribute/style.css">
+</head>
+<body>
+
+<!-- ── HEADER ───────────────────────────────────────── -->
+<header>
+<div class="header-inner">
+<a href="" class="logo">ANIMETA</a>
+<nav>
+    <a href="/" class="active">Back to home page</a>
+</nav>
+</div>
+</header>
+
+<!-- ── HERO ─────────────────────────────────────────── -->
+<section class="hero">
+<div class="hero-inner">
+<span class="hero-label">
+    <span class="dot"></span>
+    Contribute to ANIMETA Plateform
+</span>
+<h1>Propose an <span class="hl">Elementary Action</span></h1>
+<p>Submit a new elementary action to the ANIMETA catalogue. The scientific committee will review your proposal and, once validated, it will be integrated into the simulation engine.</p>
+</div>
+</section>
+
+<!-- ── FORM ──────────────────────────────────────────── -->
+<div class="form-section">
+<div class="form-canvas">
+<!-- Toolbar -->
+<div class="form-toolbar">
+    <!--div class="toolbar-left">
+    <span class="toolbar-title">Action Proposal Form</span>
+    <span class="toolbar-badge">Draft</span>
+    </div-->
+</div>
+
+<!-- Fields -->
+<div class="form-body">
+
+    <!-- SECTION A ── ACTION DESCRIPTION -->
+    <div class="workflow-step">
+    <div class="step-header">
+        <span class="step-letter">A.</span>
+        <span class="step-title">Action Description</span>
+    </div>
+
+    <div class="field">
+        <label>Action name <span class="req">*</span></label>
+        <input type="text" id="field-name" name="name" placeholder="e.g. InkingResponse">
+    </div>
+
+    <!--div class="field field-row">
+        <div class="field">
+        <label>Category / Behavior type <span class="req">*</span></label>
+        <select id="field-category" name="category">
+            <option value="">— Select category —</option>
+            <option value="locomotion">Locomotion</option>
+            <option value="feeding">Feeding</option>
+            <option value="social-interaction">Social interaction</option>
+            <option value="reproduction">Reproduction</option>
+            <option value="predator-avoidance">Predator avoidance</option>
+            <option value="other">Other</option>
+        </select>
+        </div>
+        <div class="field">
+        <label>Target species / taxon <span class="req">*</span></label>
+        <input type="text" id="field-species" name="species" placeholder="e.g. Sepia officinalis">
+        </div>
+    </div-->
+
+    <div class="field">
+        <label>Description <span class="req">*</span></label>
+        <textarea id="field-description" name="description" placeholder="Describe the biological / ethological behavior being modeled. What triggers this action? What is the observable outcome?"></textarea>
+    </div>
+    </div>
+
+    <!-- SECTION B ── ATTRIBUTES -->
+    <div class="workflow-step">
+    <div class="step-header">
+        <span class="step-letter">B.</span>
+        <span class="step-title">Attributes</span>
+    </div>
+
+    <div class="attr-table-wrap">
+        <table class="attr-table" id="attr-table">
+        <thead>
+            <tr>
+            <th class="col-name">Attribute name</th>
+            <th class="col-type">Type</th>
+            <th class="col-constraint">Constraint</th>
+            <th class="col-min">Min</th>
+            <th class="col-max">Max</th>
+            <th class="col-domain">Domain</th>
+            <th class="col-action"></th>
+            </tr>
+        </thead>
+        <tbody id="attr-tbody">
+            <!-- filled by JS -->
+        </tbody>
+        </table>
+    </div>
+
+    <button class="btn-tool" id="btn-add-attr">+ Add attribute</button>
+    </div>
+
+    <!-- SECTION C ── IMPLEMENTATION -->
+    <div class="workflow-step">
+    <div class="step-header">
+        <span class="step-letter">C.</span>
+        <span class="step-title">Implementation</span>
+    </div>
+
+    <div class="code-editor-wrap">
+        <div class="code-toolbar">
+        <label for="field-language">Language</label>
+        <select id="field-language" name="language">
+            <option value="pseudocode">Pseudocode</option>
+            <option value="python">Python</option>
+            <option value="netlogo">NetLogo</option>
+            <option value="java">Java</option>
+        </select>
+        </div>
+        <textarea class="code-area" id="field-code" name="code" placeholder="DEFINE ACTION InkingResponse&#10;  INPUTS: stimulus, ink_reserve&#10;  IF stimulus.strength &gt; threshold AND ink_reserve &gt; 0 THEN&#10;    RELEASE ink(amount: ink_reserve)&#10;    stimulus.strength = 0&#10;  ENDIF&#10;END DEFINE"></textarea>
+        <div class="code-help">Describe the algorithmic logic of this action: inputs, decision rules, and outputs.</div>
+    </div>
+    </div>
+
+    <!-- SECTION D ── BIBLIOGRAPHIC REFERENCES -->
+    <div class="workflow-step">
+    <div class="step-header">
+        <span class="step-letter">D.</span>
+        <span class="step-title">Bibliographic References</span>
+    </div>
+
+    <div class="ref-table-wrap">
+        <table class="ref-table" id="ref-table">
+        <thead>
+            <tr>
+            <th class="col-authors">Authors</th>
+            <th class="col-year">Year</th>
+            <th class="col-title">Title</th>
+            <th class="col-source">Source / Journal</th>
+            <th class="col-doi">DOI or URL</th>
+            <th class="col-action"></th>
+            </tr>
+        </thead>
+        <tbody id="ref-tbody">
+            <!-- filled by JS -->
+        </tbody>
+        </table>
+    </div>
+
+    <button class="btn-tool" id="btn-add-ref">+ Add reference</button>
+    </div>
+
+    <!-- SECTION E ── SUBMISSION -->
+    <div class="workflow-step">
+
+
+    <div class="btn-group">
+        <button class="btn-primary" id="btn-submit">Submit for review</button>
+    </div>
+    </div>
+
+</div><!-- /.form-body -->
+
+<!-- Status bar -->
+<div class="form-statusbar">
+    <span class="statusbar-left" id="statusbar-left"> </span>
+    <span class="statusbar-right"></span>
+</div>
+</div><!-- /.form-canvas -->
+</div><!-- /.form-section -->
+
+<!-- ── MODAL ─────────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-overlay">
+<div class="modal">
+<div class="modal-label">Submission received</div>
+<h2>Action submitted for review</h2>
+<p>Your elementary action proposal has been successfully submitted to the ANIMETA scientific committee. You will be notified once the review is complete.</p>
+<button class="btn-close" id="btn-modal-close">Close</button>
+</div>
+</div>
+
+<!-- ── FOOTER ─────────────────────────────────────────── -->
+<footer>
+<div class="footer-inner">
+<div>
+    <div class="footer-brand">ANIMETA</div>
+    <div class="footer-meta">
+    Dr. Chabi A. R. Babatounde<br>
+    UMR CNRS 6134 — STELLA MARE, Université de Corse
+    </div>
+</div>
+<div class="footer-right">
+    Animal Behavior Modeling Platform
+</div>
+</div>
+</footer>
+
+
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+    <script src="/js/contribute/script.js"></script>
+
+</body>
+</html>

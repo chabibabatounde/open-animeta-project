@@ -4,7 +4,6 @@
 
 // ...
 
-
 /**
  * model/getmodel.js
  *

@@ -30,6 +30,7 @@ module.exports.routes = {
 
 
   'GET /modeling': { action: 'web/modeling/index'},
+  'GET /contribute': { action: 'web/contribute/index'},
 
 
 
