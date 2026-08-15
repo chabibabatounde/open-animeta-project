@@ -54,6 +54,17 @@ module.exports.datastores = {
     // CREATE USER 'appanimeta'@'%' IDENTIFIED BY 'mot_de_passe_fort';
     // GRANT ALL PRIVILEGES ON `animeta%`.* TO 'appanimeta'@'%';
     // FLUSH PRIVILEGES;
+
+    /*
+      CREATE USER IF NOT EXISTS 'appanimeta'@'localhost'
+      IDENTIFIED BY 'monmotdepassesimple';
+
+      GRANT ALL PRIVILEGES ON `animeta_db`.* 
+      TO 'appanimeta'@'localhost';
+
+      ALTER USER 'appanimeta'@'localhost' IDENTIFIED WITH mysql_native_password BY 'monmotdepassesimple';
+      FLUSH PRIVILEGES;
+    */
   },
 
 
