@@ -8,7 +8,7 @@ function createAttrRow(name, type, constraint, min, max, domain) {
 var tr = document.createElement('tr');
 
 var fields = [
-    { val: name || '', placeholder: 'e.g. speed' },
+    { val: name || '', placeholder: 'e.g. duration' },
     { val: type || '', placeholder: 'float' },
     { val: constraint || '', placeholder: 'e.g. > 0' },
     { val: min || '', placeholder: '0' },
@@ -51,8 +51,9 @@ updateStatus();
 });
 
 // Seed rows
-attrTbody.appendChild(createAttrRow('speed', 'float', '> 0', '0', '2.5', 'm/s'));
-attrTbody.appendChild(createAttrRow('direction', 'float', 'discrete steps', '0', '360', 'degrees'));
+//attrTbody.appendChild(createAttrRow('duration', 'int', '>= 0', '0', '100', 'time steep'));
+attrTbody.appendChild(createAttrRow('', '',  '', '', '', ''));
+attrTbody.appendChild(createAttrRow('', '',  '', '', '', ''));
 
 /* ── REFERENCES ───────────────────────────────────── */
 var refTbody = document.getElementById('ref-tbody');
@@ -104,11 +105,11 @@ updateStatus();
 
 // Seed row
 refTbody.appendChild(createRefRow(
-'Hanlon, R.T. & Messenger, J.B.',
-'2018',
-'Cuttlefish camouflage: The foraging behavior of Sepia officinalis',
-'Cambridge University Press — Cephalopod Behaviour',
-'10.1017/CBO9780511541962'
+    '',
+    '',
+    '',
+    '',
+    ''
 ));
 
 /* ── STATUS BAR ──────────────────────────────────── */
