@@ -49,7 +49,8 @@ module.exports.datastores = {
     *                                                                          *
     ***************************************************************************/
     adapter: 'sails-mysql',
-    url: 'mysql://appanimeta:monmotdepassesimple@localhost/animeta_db',
+    url: 'mysql://appanimeta:monmotdepassesimple@127.0.0.1:3306/animeta_db',
+    //'mysql://appanimeta:monmotdepassesimple@localhost/animeta_db',
     
     /*
     CREATE USER IF NOT EXISTS 'appanimeta'@'localhost'
