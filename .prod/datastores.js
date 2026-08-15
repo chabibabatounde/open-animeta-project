@@ -49,7 +49,7 @@ module.exports.datastores = {
     *                                                                          *
     ***************************************************************************/
     adapter: 'sails-mysql',
-    url: 'mysql://appanimeta:monmotdepassesimple@127.0.0.1:3306/animeta_db',
+    url: 'mysql://appanimeta:monmotdepassesimple@localhost/animeta_db',
     //'mysql://appanimeta:monmotdepassesimple@localhost/animeta_db',
     
     /*
@@ -59,7 +59,9 @@ module.exports.datastores = {
     GRANT ALL PRIVILEGES ON `animeta_db`.* 
     TO 'appanimeta'@'localhost';
 
+    ALTER USER 'appanimeta'@'localhost' IDENTIFIED WITH mysql_native_password BY 'monmotdepassesimple';
     FLUSH PRIVILEGES;
+
     */
   },
 
