@@ -6,66 +6,66 @@ function verifyNode(node){
             switch (propertie) {
                 case 'target':
                     if(value==''){
-                        result = 'Target non défini pour '+node.type;
+                        result = 'Target is not defined for '+node.type;
                     }
                     break;
-                
+
                 case 'name':
                     if(value==''){
-                        result = 'Veuillez donner un nom à '+node.type;
+                        result = 'Please give a name to '+node.type;
                     }
                     break;
 
                 case 'test string':
                     if(value==''){
-                        result = 'Test string ne peut pas être vide pour '+node.type;
+                        result = 'Test string cannot be empty for '+node.type;
                     }
                     break;
 
                 case 'attribute':
                     if(value==''){
-                        result = 'Vous devez définir un attribut pour tous les '+node.type;
+                        result = 'You must define an attribute for all '+node.type;
                     }
                     break;
-                
+
                 case 'strength expression':
                     if(value==''){
-                        result = 'Strength expression ne peut pas être vide pour '+node.type;
+                        result = 'Strength expression cannot be empty for '+node.type;
                     }
                     break;
-                
+
                 case 'type':
                     if (!['float', 'int'].includes(value)) {
-                        result = "Le type " + value + " du paramètre pour " + node.type + " n'est pas accepté";
+                        result = "The type " + value + " of the parameter for " + node.type + " is not accepted";
                     }
                     break;
-                
+
                 case 'angle':
                     if(value==''){
-                        result = "Vous devez définir une valeur de l'angle pour "+node.type;
+                        result = "You must define an angle value for "+node.type;
                     }
                     break;
 
                 case 'raduis':
                     if(value==''){
-                        result = "Vous devez définir un rayon pour "+node.type;
+                        result = "You must define a radius for "+node.type;
                     }
                     break;
 
                 case 'default':
                     if(value==''){
-                        result = "Définissez une valeur par défaut pour "+node.type;
+                        result = "Set a default value for "+node.type;
                     }
                     break;
-                    
+
                 default:
-                    // Code par défaut si aucun cas ne correspond
+                    // Default code if no case matches
             }
             if(result == -256){
                 /*
                 if(node.type =='Sx'){
                     if (!['float', 'int'].includes(value)) {
-                        result = "Le type " + value + " du paramètre pour " + node.type + " n'est pas accepté";
+                        result = "The type " + value + " of the parameter for " + node.type + " is not accepted";
                     }
                 }*/
             }

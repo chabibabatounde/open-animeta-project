@@ -28,6 +28,13 @@ module.exports.routes = {
   'POST /register': { action: 'auth/register'},
 
   'GET /modeling': { action: 'web/modeling/index'},
+  'POST /modeling/save': { action: 'modeling/api/savemodel'},
+
+  'GET /simulation': { action: 'web/simulation/index'},
+
+
+
+
   'GET /contribute': { action: 'web/contribute/index'},
   'POST /contribute': { action: 'web/contribute/api/contribute'},
 

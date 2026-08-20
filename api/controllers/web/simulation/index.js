@@ -6,13 +6,13 @@
 
 
 /**
- * web/modeling/index.js
+ * web/simulation/index.js
  *
- * Index modeling.
+ * Index simulation.
  */
 module.exports = async function index(req, res) {
 
+    return res.view('web/simulation/index');
 
-  return res.view('web/modeling/index');
 
 };

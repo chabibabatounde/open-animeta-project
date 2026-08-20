@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,8 +11,6 @@
     <link rel="stylesheet" href="/styles/modeling/style.css">
 
 </head>
-
-
 
 <body>
 
@@ -28,20 +26,20 @@
                     <i class="bi bi-folder2-open"></i> Projects
                 </button>
                 <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#" id="btnNewProject"><i class="bi bi-file-plus me-2"></i>Nouveau projet</a></li>
-                    <li><a class="dropdown-item" href="#" id="btnOpenProject"><i class="bi bi-folder2-open me-2"></i>Ouvrir un projet</a></li>
-                    <li><a class="dropdown-item" href="#" id="btnExportJSON"><i class="bi bi-download me-2"></i>Exporter le projet</a></li>
+                    <li><a class="dropdown-item" href="#" id="btnNewProject"><i class="bi bi-file-plus me-2"></i>New project</a></li>
+                    <li><a class="dropdown-item" href="#" id="btnOpenProject"><i class="bi bi-folder2-open me-2"></i>Open a project</a></li>
+                    <li><a class="dropdown-item" href="#" id="btnExportJSON"><i class="bi bi-download me-2"></i>Export project</a></li>
                 </ul>
             </div>
 
-            <div class="dropdown">
+            <!--div class="dropdown">
                 <button class="btn btn-menu dropdown-toggle" data-bs-toggle="dropdown">
                     <i class="bi bi-play-circle"></i> Recents
                 </button>
                 <ul class="dropdown-menu">
                     <li><a class="dropdown-item" href="#" id="btnRunSimulation"><i class="bi bi-arrow-counterclockwise me-2" ></i> P1 </a></li>
                 </ul>
-            </div>
+            </div-->
 
             <input type="file" id="fileImportInput" accept=".json" style="display:none;">
 
@@ -61,7 +59,7 @@
                 </button>
                 <ul class="dropdown-menu">
                     <li><a class="dropdown-item" href="#" id="btnAutoLayout"><i class="bi bi-send-check me-2"></i>Submit partialModel</a></li>
-                    <li><a class="dropdown-item" href="#" id="btnClearGraph"><i class="bi bi-trash3 me-2"></i>Effacer le graphe</a></li>
+                    <li><a class="dropdown-item" href="#" id="btnClearGraph"><i class="bi bi-trash3 me-2"></i>Clear graph</a></li>
                 </ul>
             </div>
 
@@ -69,15 +67,15 @@
             <button class="btn btn-verify" id="btnVerify"><i class="bi bi-card-checklist"></i> Verify</button>
 
             <button class="btn btn-menu panel-toggle-btn ms-auto" id="toggleLeftPanel">
-                <i class="bi bi-list"></i> Composants
+                <i class="bi bi-list"></i> Components
             </button>
             <button class="btn btn-menu panel-toggle-btn" id="toggleRightPanel">
-                <i class="bi bi-sliders"></i> Propriétés
+                <i class="bi bi-sliders"></i> Properties
             </button>
-
-            <div class="top-menu-status" style="border: 1px solid white; padding: 7px; border-radius: 4px; cursor: pointer;">
-                <div class="status-dot"></div>
-                <span>Log out</span>
+            <div id="btnGoHome" class="top-menu-status" style="border: 1px solid white; padding: 7px; border-radius: 4px; cursor: pointer;">
+                <span>
+                    Back to home page
+                </span>
             </div>
         </div>
 
@@ -86,8 +84,8 @@
 
             <!-- LEFT PANEL -->
             <div class="left-panel" id="leftPanel">
-                <div class="panel-title"><i class="bi bi-boxes"></i> Composants disponibles</div>
-                <input type="text" class="search-box" id="componentSearch" placeholder="🔍 Rechercher un composant...">
+                <div class="panel-title"><i class="bi bi-boxes"></i> Available components</div>
+                <input type="text" class="search-box" id="componentSearch" placeholder="🔍 Search for a component...">
 
                 <div class="component-item" draggable="true" data-type="PM">
                     <div class="icon-badge">PM</div>
@@ -130,7 +128,7 @@
                     <span>PartialKnowledge</span>
                 </div>
             </div>
-            
+
             <!-- CENTER PANEL -->
             <div class="center-panel" id="centerPanelWrapper">
                 <div class="center-panel-toolbar">
@@ -138,25 +136,25 @@
                     <button class="toolbar-btn" id="zoomOut"><i class="bi bi-zoom-out"></i></button>
                     <button class="toolbar-btn" id="resetZoom"><i class="bi bi-aspect-ratio"></i> Reset</button>
                     <div class="toolbar-hint">
-                        <span><kbd>Double-clic</kbd> = créer connexion</span>
-                        <span><kbd>Clic</kbd> = sélectionner</span>
+                        <span><kbd>Double-click</kbd> = create connection</span>
+                        <span><kbd>Click</kbd> = select</span>
                     </div>
                 </div>
                 <div id="graphCanvas">
                     <svg class="connections-layer" id="connectionsSvg"></svg>
                     <div class="canvas-empty-hint" id="emptyHint">
                         <i class="bi bi-cursor"></i>
-                        Glissez un composant ici pour commencer
+                        Drag a component here to get started
                     </div>
                 </div>
             </div>
 
             <!-- RIGHT PANEL -->
             <div class="right-panel" id="rightPanel">
-                <div class="panel-title"><i class="bi bi-sliders"></i> Propriétés</div>
+                <div class="panel-title"><i class="bi bi-sliders"></i> Properties</div>
                 <div id="noSelectionMsg">
                     <i class="bi bi-hand-index-thumb"></i>
-                    Sélectionnez un composant dans le graphe pour éditer ses propriétés
+                    Select a component in the graph to edit its properties
                 </div>
                 <div id="propertiesForm" style="display:none;"></div>
             </div>
@@ -167,7 +165,7 @@
         <div class="bottom-panel">
             <div class="console-header">
                 <div class="console-tab active"><i class="bi bi-terminal"></i> Console</div>
-                <button class="console-clear-btn" id="clearConsole"><i class="bi bi-trash3"></i> Effacer</button>
+                <button class="console-clear-btn" id="clearConsole"><i class="bi bi-trash3"></i> Clear</button>
             </div>
             <div class="console-body" id="consoleLog"></div>
         </div>
