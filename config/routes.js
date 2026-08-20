@@ -21,16 +21,15 @@ module.exports.routes = {
 
   'GET /': { action: 'web/landingpage/index' },
 
-
   'GET /auth/:app': { action: 'auth/authentication'},
   'POST /auth/:app': { action: 'auth/authentication'},
 
   'GET /register': { action: 'auth/register'},
   'POST /register': { action: 'auth/register'},
 
-
   'GET /modeling': { action: 'web/modeling/index'},
   'GET /contribute': { action: 'web/contribute/index'},
+  'POST /contribute': { action: 'web/contribute/api/contribute'},
 
 
 
