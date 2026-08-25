@@ -70,19 +70,26 @@ module.exports = async function savemodel(req, res) {
         nodeCat.partialKnowledge.push(element.id)
       }
     }
-    
+
     let rawmodel = {
       jsondata : JSON.stringify(post),
-      name : post.loadedModel.modelName,
-      owner: req.user.id,
+      name : post.loadedModel.filename,
+      owner: req.session.user.id,
       identity : post.loadedModel.id
     }
+    if(post.loadedModel.modelName){
+      rawmodel = await Rawmodel.updateOne({ id: post.loadedModel.id }).set(rawmodel)
+      response.info = 'Proposed action edited';
+      response.data = rawmodel;
+      status = 200;
+    }else{
+      rawmodel = await Rawmodel.create(rawmodel)
+      response.info = 'Proposed action saved';
+      response.data = rawmodel;
+      status = 200;
+    }
     
-    await Rawmodel.create(rawmodel)
     
-    response.info = 'Proposed action saved';
-    response.data = rawmodel;
-    status = 200;
 
   } catch (error) {
     sails.log.error(error);

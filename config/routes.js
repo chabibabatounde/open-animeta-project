@@ -29,21 +29,15 @@ module.exports.routes = {
 
   'GET /modeling': { action: 'web/modeling/index'},
   'POST /modeling/save': { action: 'modeling/api/savemodel'},
+  'GET /modeling/api/projects': { action: 'modeling/api/projects'},
+  'GET /modeling/api/project/:id': { action: 'modeling/api/project'},
 
   'GET /simulation': { action: 'web/simulation/index'},
-
-
-
 
   'GET /contribute': { action: 'web/contribute/index'},
   'POST /contribute': { action: 'web/contribute/api/contribute'},
 
-
-
-
   //'POST /user': { action: 'user/create' },
-
-
 
   'POST /user-email': { action: 'user/find' },
   'GET /user/activate/:token': { action: 'user/activate'},

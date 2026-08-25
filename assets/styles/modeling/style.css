@@ -41,6 +41,46 @@ html, body {
     height: 100vh;
 }
 
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    position: relative;
+    width: 90%;
+    max-width: 600px;
+    margin: 10% auto;
+    padding: 25px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+}
+
+.modal-close {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 28px;
+    cursor: pointer;
+}
+
+#projectList ul {
+    padding-left: 20px;
+}
+
+#projectList li {
+    margin-bottom: 10px;
+}
+
+.error {
+    color: #d9534f;
+}
+
+
 /* ===== TOP MENU ===== */
 .top-menu {
     background: linear-gradient(90deg, var(--bg-dark) 0%, var(--bg-medium) 100%);

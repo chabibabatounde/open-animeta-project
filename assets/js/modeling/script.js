@@ -1,99 +1,60 @@
-const json_actions = `
-[   
-    {
-        "name": "Eat",
-        "id": "Ax",
-        "subtype": "Eat",
-        "attributs": [
-            {"name": "duration", "type": "int"},
-            {"name": "gap", "type": "float"}
-        ]
-    },
-    {
-        "name": "GetCloser",
-        "id": "Ax",
-        "subtype": "GetCloser",
-        "attributs": [
-            {"name": "duration", "type": "int"},
-            {"name": "gap", "type": "float"}
-        ]
-    },
-    {
-        "name": "Sleep",
-        "id": "Ax",
-        "subtype": "Sleep",
-        "attributs": [
-            {"name": "duration", "type": "int"},
-            {"name": "gap", "type": "float"}
-        ]
-    },
-    {
-        "name": "RandomMove",
-        "id": "Ax",
-        "subtype": "RandomMove",
-        "attributs": [
-            {"name": "duration", "type": "int"},
-            {"name": "gap", "type": "float"}
-        ]
-    },
-    {
-        "name": "RunAway",
-        "id": "Ax",
-        "subtype": "RunAway",
-        "attributs": [
-            {"name": "duration", "type": "int"},
-            {"name": "gap", "type": "float"}
-        ]
+/* ==========================================================================
+   ANIMETA GRAPH STUDIO
+   Architecture : IIFE + namespace public (window.GraphStudio)
+   ========================================================================== */
+
+(function (window, $) {
+    'use strict';
+
+    /* ======================================================================
+       1. DONNÉES SOURCE (ACTIONS)
+       ====================================================================== */
+
+    const json_actions = `
+    [
+        { "name": "Eat",        "id": "Ax", "subtype": "Eat",        "attributs": [{"name":"duration","type":"int"},{"name":"gap","type":"float"}] },
+        { "name": "GetCloser",  "id": "Ax", "subtype": "GetCloser",  "attributs": [{"name":"duration","type":"int"},{"name":"gap","type":"float"}] },
+        { "name": "Sleep",      "id": "Ax", "subtype": "Sleep",      "attributs": [{"name":"duration","type":"int"},{"name":"gap","type":"float"}] },
+        { "name": "RandomMove", "id": "Ax", "subtype": "RandomMove", "attributs": [{"name":"duration","type":"int"},{"name":"gap","type":"float"}] },
+        { "name": "RunAway",    "id": "Ax", "subtype": "RunAway",    "attributs": [{"name":"duration","type":"int"},{"name":"gap","type":"float"}] }
+    ]`;
+
+    let actions = [];
+    try {
+        actions = JSON.parse(json_actions);
+    } catch (e) {
+        console.error('[GraphStudio] JSON actions invalide :', e);
+        actions = [];
     }
-]
-`;
 
-let loadedModel =  {
-    modelName : null,
-    id : null
-}
+    /* ======================================================================
+       2. ÉTAT GLOBAL DU MODULE
+       ====================================================================== */
 
-const actions = JSON.parse(json_actions);
+    // ⚠️ let (et non const) car on réassigne l'objet lors des imports
+    let graphState = { nodes: {}, connections: [] };
+    let nodeCounter = 0;
+    let selectedNodeId = null;
+    let linkModeSourceId = null;
+    let zoomLevel = 1;
 
-// 🎯 Build the propertiesSchema from the JSON
-const actionsSchema = {};
-let b = 0
-actions.forEach(action => {
-    b += 1;
-    //const key = `Ax_${action.subtype}`; // unique key: "Ax_Eat", "Ax_GetCloser", etc.
-    const key = `Ax${b}`; // unique key: "Ax_Eat", "Ax_GetCloser", etc. // Add the action_type field (readonly)
-    const schema = [
-        { 
-            name: "action_type", 
-            label: "Action type", 
-            type: "select",  
-            options: actions.map(a => a.subtype), 
-            default: action.subtype, 
-            readonly: true 
-        }
-    ];
+    let loadedModel = {
+        modelName: null,
+        filename: null,
+        id: null
+    };
 
-    // Add attributes from the JSON
-    action.attributs.forEach(attr => {
-        schema.push({
-            name: attr.name,
-            label: attr.name.charAt(0).toUpperCase() + attr.name.slice(1), // Capitalize
-            type: attr.type === "int" ? "number" : "text",
-            default: attr.type === "int" ? 0 : ""
-        });
-    });
+    let $canvas = null; // initialisé dans init()
 
-    actionsSchema[key] = schema;
-});
+    /* ======================================================================
+       3. CONFIGURATION (RÈGLES MÉTIER)
+       ====================================================================== */
 
-$(function() {
-
-    /* ============ CONFIGURATION ============ */
     const connectionRules = {
         "PM": ["P", "D", "PT"],
-        "P" : ["Px"],
+        "P":  ["Px"],
         "Px": ["Sx"],
-        "D": ["PD"],
+        "D":  ["PD"],
         "PT": ["Ax", "PA"],
         "Sx": ["PK"],
         "PD": ["PT", "PK", "Px"],
@@ -102,290 +63,177 @@ $(function() {
 
     const connectionLimits = {
         "PM": { "PT": 1, "D": 1, "P": 1 },
-        "P": { "PM": 1 },
+        "P":  { "PM": 1 }
     };
 
     const incomingLimits = {
-        "Sx": 1,
-        "PD": 1,
-        "D": 1,
-        "Ax": 1,
-        "PA": 1,
-        "PK": 1,
-        "PT": 1,
+        "Sx": 1, "PD": 1, "D": 1, "Ax": 1,
+        "PA": 1, "PK": 1, "PT": 1
     };
+
+    /* --- Construction dynamique du schéma des actions -------------------- */
+
+    const actionsSchema = {};
+    const actionKeyMap = {}; // "Ax1" -> objet action (utile pour debug/export)
+
+    actions.forEach((action, index) => {
+        const key = `Ax${index + 1}`;
+        actionKeyMap[key] = action;
+
+        const schema = [
+            {
+                name: "action_type",
+                label: "Action type",
+                type: "select",
+                options: actions.map(a => a.subtype),
+                default: action.subtype,
+                readonly: true
+            }
+        ];
+
+        (action.attributs || []).forEach(attr => {
+            schema.push({
+                name: attr.name,
+                label: attr.name.charAt(0).toUpperCase() + attr.name.slice(1),
+                type: (attr.type === 'int' || attr.type === 'float') ? 'number' : 'text',
+                default: (attr.type === 'int' || attr.type === 'float') ? 0 : ''
+            });
+        });
+
+        actionsSchema[key] = schema;
+    });
+
     const propertiesSchema = {
-        "PM": [{ name: "name", type: "text", default: "" }],
-        "Px": [{ name: "name", type: "text", default: "" }, { name: "strength expression", type: "text", default: "" }],
-        "PD": [{ name: "name", type: "text", default: "" }, { name: "test string", type: "text", default: "" }, { name: "description", type: "text", default: "" }],
-        "Sx": [{ name: "target", type: "text", default: "" }, { name: "radius", type: "number", default: "" }, { name: "angle", type: "number", default: "" }, { name: "strength expression", type: "text", default: "" }, { name: "default", type: "text", default: "" }],
-        "PA": [{ name: "name", type: "text", default: "" }],
-        "PK": [{ name: "attribute", type: "text", default: "" }, { name: "type", type: "text", default: "float" }, { name: "range start point", type: "number", default: "0" }, { name: "range end point", type: "number", default: "10" }, { name: "values", type: "number", default: "" }],
-        
-        // 🎯 Add all Ax subtypes
+        "PM": [
+            { name: "name", type: "text", default: "" }
+        ],
+        "Px": [
+            { name: "name", type: "text", default: "" },
+            { name: "strength expression", type: "text", default: "" }
+        ],
+        "PD": [
+            { name: "name", type: "text", default: "" },
+            { name: "test string", type: "text", default: "" },
+            { name: "description", type: "text", default: "" }
+        ],
+        "Sx": [
+            { name: "target", type: "text", default: "" },
+            { name: "radius", type: "number", default: "" },
+            { name: "angle", type: "number", default: "" },
+            { name: "strength expression", type: "text", default: "" },
+            { name: "default", type: "text", default: "" }
+        ],
+        "PA": [
+            { name: "name", type: "text", default: "" }
+        ],
+        "PK": [
+            { name: "attribute", type: "text", default: "" },
+            { name: "type", type: "text", default: "float" },
+            { name: "range start point", type: "number", default: "0" },
+            { name: "range end point", type: "number", default: "10" },
+            { name: "values", type: "number", default: "" }
+        ],
         ...actionsSchema
     };
-    let b = 0;
-    // 🎯 Dynamically display actions in the left panel
-    actions.forEach(action => {
-        b += 1;
-        //const actionKey = `Ax_${action.subtype}`;
-        const actionKey = `Ax${b}`;
-        const code = `
-            <div class="component-item" draggable="true" data-type="${actionKey}" data-subtype="${b}">
-                <div class="icon-badge">Ax</div>
-                <span>${action.name}</span>
-            </div>
-        `;
-        document.getElementById('leftPanel').innerHTML += code;
-    });
 
-    /* ============ IMPORT JSON ============ */
-    $('#btnImportJSON').on('click', function(e) {
-        e.preventDefault();
-        $('#fileImportInput').trigger('click');
-    });
+    /* ======================================================================
+       4. UTILITAIRES
+       ====================================================================== */
 
-    $('#fileImportInput').on('change', function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
+    /** Type générique : "Ax1" / "Ax_Eat" -> "Ax" ; "PM" -> "PM" */
+    function genericType(type) {
+        if (!type) return '';
+        const base = String(type).split('_')[0];
+        const m = base.match(/^([A-Za-z]+)/);
+        return m ? m[1] : base;
+    }
 
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            try {
-                const importedData = JSON.parse(event.target.result);
-                loadGraphFromJSON(importedData);
-            } catch (err) {
-                log(`Import error: invalid JSON file`, "error");
-                showToast("Invalid JSON file", "error");
-            }
+    function escapeHtml(str) {
+        return String(str == null ? '' : str)
+            .replace(/&/g, '&')
+            .replace(/</g, '<')
+            .replace(/>/g, '>')
+            .replace(/"/g, '"');
+    }
+
+    function log(message, type) {
+        type = type || 'info';
+        const icons = {
+            info:    'bi-info-circle',
+            error:   'bi-x-circle',
+            success: 'bi-check-circle'
         };
-        reader.readAsText(file);
-        $(this).val('');
-    });
-
-    function loadGraphFromJSON(importedData) {
-        if (!importedData.nodes || !Array.isArray(importedData.nodes)) {
-            log("Invalid JSON structure: missing 'nodes' property", "error");
-            showToast("Invalid JSON structure", "error");
+        const $console = $('#consoleLog');
+        if (!$console.length) {
+            console.log('[GraphStudio]', message);
             return;
         }
+        const $line = $('<div class="log-line log-' + type + '"></div>')
+            .append('<span class="log-time">' + new Date().toLocaleTimeString() + '</span>')
+            .append('<i class="bi ' + (icons[type] || icons.info) + ' log-icon"></i>')
+            .append('<span class="log-msg">' + message + '</span>');
+        $console.append($line);
+        $console.scrollTop($console[0].scrollHeight);
+    }
 
-        if (!confirm("Importing this file will replace the current graph. Continue?")) {
-            return;
-        }
-
-        clearCanvas(false);
-        graphState = { nodes: {}, connections: [] };
-        nodeCounter = 0;
-        importedData.nodes.forEach(nodeData => {
-            // 🎯 Check against the full type (e.g. "Ax_Eat")
-            if (!propertiesSchema[nodeData.type]) {
-                log(`Unknown component type ignored: "${nodeData.type}"`, "error");
-                return;
-            }
-
-            graphState.nodes[nodeData.id] = {
-                id: nodeData.id,
-                type: nodeData.type,
-                x: nodeData.x,
-                y: nodeData.y,
-                data: nodeData.data || {}
-            };
-
-            renderNode(graphState.nodes[nodeData.id]);
-
-            const num = parseInt(nodeData.id.replace('node_', ''), 10);
-            if (!isNaN(num) && num > nodeCounter) nodeCounter = num;
-        });
-
-        if (Array.isArray(importedData.connections)) {
-            importedData.connections.forEach(conn => {
-                if (graphState.nodes[conn.from] && graphState.nodes[conn.to]) {
-                    graphState.connections.push({ from: conn.from, to: conn.to });
-                }
+    function showToast(message, type) {
+        const bg = (type === 'error') ? '#f87171' : '#4ade80';
+        const $toast = $('<div></div>')
+            .text(message)
+            .css({
+                position: 'fixed', top: '70px', right: '20px',
+                background: bg, color: '#fff', padding: '12px 20px',
+                borderRadius: '8px', boxShadow: '0 4px 15px rgba(0,0,0,.3)',
+                zIndex: 9999, fontSize: '14px', fontWeight: 600
             });
-            redrawAllConnections();
-        }
-
-        $('#emptyHint').toggle(Object.keys(graphState.nodes).length === 0);
-        log(`Graph imported successfully: <strong>${importedData.nodes.length}</strong> component(s), <strong>${importedData.connections?.length || 0}</strong> connection(s)`, "success");
-        showToast("Import successful", "success");
+        $('body').append($toast);
+        setTimeout(function () {
+            $toast.fadeOut(300, function () { $(this).remove(); });
+        }, 3000);
     }
 
-    /* ============ EXPORT JSON ============ */
-    function exportGraphToJSON() {
-        const exportData = {
-            meta: {
-                appName: "GraphStudio",
-                version: "1.0",
-                exportedAt: new Date().toISOString(),
-                nodeCount: Object.keys(graphState.nodes).length,
-                connectionCount: graphState.connections.length
-            },
-            nodes: Object.values(graphState.nodes).map(node => ({
-                id: node.id,
-                type: node.type,
-                x: node.x,
-                y: node.y,
-                data: node.data
-            })),
-            connections: graphState.connections.map(conn => ({
-                from: conn.from,
-                to: conn.to
-            }))
-        };
-        return exportData;
+    /* ======================================================================
+       5. RENDU / MANIPULATION DU GRAPHE
+       ====================================================================== */
+
+    function initSvgDefs() {
+        const svg = document.getElementById('connectionsSvg');
+        if (!svg || svg.querySelector('defs')) return;
+        const NS = 'http://www.w3.org/2000/svg';
+        const defs = document.createElementNS(NS, 'defs');
+        defs.innerHTML =
+            '<marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">' +
+            '<polygon points="0 0, 10 3.5, 0 7" fill="#7c5cff"/></marker>';
+        svg.appendChild(defs);
     }
 
-    $('#btnExportJSON').on('click', function(e) {
-        e.preventDefault();
+    function drawConnectionLine(fromId, toId) {
+        const $from = $('#' + fromId);
+        const $to = $('#' + toId);
+        if (!$from.length || !$to.length) return;
 
-        if (Object.keys(graphState.nodes).length === 0) {
-            showToast("The graph is empty, nothing to export", "error");
-            return;
-        }
-        verifyAndDisplayGraphDetails
-        downloadGraphAsJSON();
-    });
+        const f = $from.position();
+        const t = $to.position();
+        const NS = 'http://www.w3.org/2000/svg';
+        const line = document.createElementNS(NS, 'line');
 
-    function downloadGraphAsJSON() {
-        const data = exportGraphToJSON();
-        const jsonString = JSON.stringify(data, null, 2);
+        line.setAttribute('x1', f.left + $from.outerWidth() / 2);
+        line.setAttribute('y1', f.top + $from.outerHeight() / 2);
+        line.setAttribute('x2', t.left + $to.outerWidth() / 2);
+        line.setAttribute('y2', t.top + $to.outerHeight() / 2);
+        line.setAttribute('stroke', '#7c5cff');
+        line.setAttribute('stroke-width', '2.5');
+        line.setAttribute('marker-end', 'url(#arrowhead)');
+        line.setAttribute('opacity', '0.85');
 
-        const blob = new Blob([jsonString], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const timestamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
-        const filename = `Animeta-export-${timestamp}.anmt`;
-
-        const $link = $('<a>')
-            .attr('href', url)
-            .attr('download', filename)
-            .appendTo('body');
-
-        $link[0].click();
-        $link.remove();
-        URL.revokeObjectURL(url);
-
-        log(`Model: <strong>${filename}</strong> (${data.nodes.length} component(s), ${data.connections.length} connection(s))`, "success");
-        showToast(`Export successful: ${filename}`, "success");
+        document.getElementById('connectionsSvg').appendChild(line);
     }
 
-    /* ============ DELETION ============ */
-    $(document).on('keydown', function(e) {
-        const isTyping = $(e.target).is('input, textarea, select');
-        if (isTyping) return;
-
-        if ((e.key === 'Delete' || e.key === 'Backspace') && selectedNodeId) {
-            e.preventDefault();
-            deleteNode(selectedNodeId);
-        }
-    });
-
-    function deleteNode(nodeId) {
-        const node = graphState.nodes[nodeId];
-        if (!node) return;
-
-        const label = node.data.name || node.type;
-
-        if (!confirm(`Delete the component "${label}"?\nIts connections will also be removed.`)) {
-            return;
-        }
-
-        $('#' + nodeId).remove();
-
-        const before = graphState.connections.length;
-        graphState.connections = graphState.connections.filter(
-            conn => conn.from !== nodeId && conn.to !== nodeId
-        );
-        const removedConnections = before - graphState.connections.length;
-
-        delete graphState.nodes[nodeId];
-        redrawAllConnections();
-
-        if (selectedNodeId === nodeId) {
-            selectNode(null);
-        }
-
-        if (Object.keys(graphState.nodes).length === 0) {
-            $('#emptyHint').show();
-        }
-
-        log(`Component "<strong>${label}</strong>" deleted (${removedConnections} connection(s) removed)`, "success");
-        showToast(`"${label}" deleted`, "error");
-    }
-
-    let nodeCounter = 0;
-    const graphState = { nodes: {}, connections: [] };
-    let selectedNodeId = null;
-    let linkModeSourceId = null;
-    let zoomLevel = 1;
-
-    /* ============ CONSOLE LOG ============ */
-    function log(message, type = "info") {
-        const time = new Date().toLocaleTimeString();
-        const icons = { info: 'bi-info-circle', error: 'bi-x-circle', success: 'bi-check-circle' };
-        const $line = $(`<div class="log-line log-${type}"></div>`);
-        $line.append(`<span class="log-time">${time}</span>`);
-        $line.append(`<i class="bi ${icons[type]} log-icon"></i>`);
-        $line.append(`<span class="log-msg">${message}</span>`);
-        $('#consoleLog').append($line);
-        $('#consoleLog').scrollTop($('#consoleLog')[0].scrollHeight);
-    }
-
-    $('#clearConsole').on('click', function() {
-        $('#consoleLog').empty();
-        log("Console cleared.");
-    });
-
-    /* ============ SEARCH ============ */
-    $('#componentSearch').on('input', function() {
-        const query = $(this).val().toLowerCase();
-        $('.component-item').each(function() {
-            const text = $(this).text().toLowerCase();
-            $(this).toggle(text.includes(query));
-        });
-    });
-
-    /* ============ DRAG & DROP ============ */
-    $('.component-item').on('dragstart', function(e) {
-        e.originalEvent.dataTransfer.setData('componentType', $(this).data('type'));
-        e.originalEvent.dataTransfer.setData('componentLabel', $(this).find('span').text());
-        e.originalEvent.dataTransfer.setData('subtype', $(this).data('subtype') || '');
-    });
-
-    const $canvas = $('#graphCanvas');
-
-    $canvas.on('dragover', function(e) { e.preventDefault(); });
-
-    $canvas.on('drop', function(e) {
-        e.preventDefault();
-        const type = e.originalEvent.dataTransfer.getData('componentType');
-        const label = e.originalEvent.dataTransfer.getData('componentLabel');
-        const subtype = e.originalEvent.dataTransfer.getData('subtype');
-        
-        if (!type) return;
-
-        const offset = $canvas.offset();
-        const x = (e.originalEvent.pageX - offset.left + $canvas.scrollLeft()) / zoomLevel - 65;
-        const y = (e.originalEvent.pageY - offset.top + $canvas.scrollTop()) / zoomLevel - 25;
-
-        createNode(type, label, Math.max(0, x), Math.max(0, y));
-    });
-
-    function createNode(type, label, x, y) {
-        const id = 'node_' + (++nodeCounter);
-        $('#emptyHint').hide();
-
-        const schema = propertiesSchema[type] || [];
-        const defaultData = {};
-        
-        schema.forEach(field => defaultData[field.name] = field.default);
-        defaultData.name = label;
-
-        graphState.nodes[id] = { id, type, x, y, data: defaultData };
-        renderNode(graphState.nodes[id]);
-        log(`Component "<strong>${label}</strong>" added to the graph`, "success");
+    function redrawAllConnections() {
+        const svg = document.getElementById('connectionsSvg');
+        if (!svg) return;
+        svg.querySelectorAll('line').forEach(l => l.remove());
+        graphState.connections.forEach(c => drawConnectionLine(c.from, c.to));
     }
 
     function renderNode(node) {
@@ -397,32 +245,100 @@ $(function() {
 
         $canvas.append($node);
 
-        $node.draggable({
-            containment: "#graphCanvas",
-            start: function() { $(this).css('z-index', 10); },
-            drag: function() { redrawAllConnections(); },
-            stop: function(e, ui) {
-                node.x = ui.position.left;
-                node.y = ui.position.top;
-                $(this).css('z-index', 5);
-                redrawAllConnections();
-            }
-        });
+        if ($.fn.draggable) {
+            $node.draggable({
+                containment: '#graphCanvas',
+                start: function () { $(this).css('z-index', 10); },
+                drag: redrawAllConnections,
+                stop: function (e, ui) {
+                    node.x = ui.position.left;
+                    node.y = ui.position.top;
+                    $(this).css('z-index', 5);
+                    redrawAllConnections();
+                }
+            });
+        }
 
-        $node.droppable({
-            accept: '.graph-node',
-            tolerance: 'pointer',
-            over: function(e, ui) {
-                if (ui.draggable.attr('id') !== node.id) $(this).addClass('drag-over');
-            },
-            out: function() { $(this).removeClass('drag-over'); }
-        });
+        if ($.fn.droppable) {
+            $node.droppable({
+                accept: '.graph-node',
+                tolerance: 'pointer',
+                over: function (e, ui) {
+                    if (ui.draggable.attr('id') !== node.id) $(this).addClass('drag-over');
+                },
+                out: function () { $(this).removeClass('drag-over'); }
+            });
+        }
 
-        $node.on('click', function(e) {
+        $node.on('click', function (e) {
             e.stopPropagation();
             handleNodeClick(node.id);
         });
     }
+
+    function createNode(type, label, x, y) {
+        /*if (!propertiesSchema[type]) {
+            log('Unknown component type: "' + escapeHtml(type) + '"', 'error');
+            return null;
+        }*/
+        const id = 'node_' + (++nodeCounter);
+        $('#emptyHint').hide();
+
+        const data = {};
+        (propertiesSchema[type] || []).forEach(f => { data[f.name] = f.default; });
+        data.name = label;
+
+        graphState.nodes[id] = { id: id, type: type, x: x, y: y, data: data };
+        renderNode(graphState.nodes[id]);
+        log('Component "<strong>' + escapeHtml(label) + '</strong>" added to the graph', 'success');
+        return id;
+    }
+
+    function clearCanvas(askConfirmation) {
+        if (askConfirmation && !confirm('Clear the graph?')) return false;
+
+        graphState.nodes = {};
+        graphState.connections = [];
+        nodeCounter = 0;
+        selectedNodeId = null;
+        linkModeSourceId = null;
+
+        if ($canvas) $canvas.find('.graph-node').remove();
+        $('#connectionsSvg').find('line').remove();
+        selectNode(null);
+        $('#emptyHint').show();
+        return true;
+    }
+
+    function deleteNode(nodeId) {
+        const node = graphState.nodes[nodeId];
+        if (!node) return;
+
+        const label = node.data.name || node.type;
+        if (!confirm('Delete the component "' + label + '"?\nIts connections will also be removed.')) return;
+
+        $('#' + nodeId).remove();
+
+        const before = graphState.connections.length;
+        graphState.connections = graphState.connections.filter(
+            c => c.from !== nodeId && c.to !== nodeId
+        );
+        const removed = before - graphState.connections.length;
+
+        delete graphState.nodes[nodeId];
+        redrawAllConnections();
+
+        if (selectedNodeId === nodeId) selectNode(null);
+        if (Object.keys(graphState.nodes).length === 0) $('#emptyHint').show();
+
+        log('Component "<strong>' + escapeHtml(label) + '</strong>" deleted (' +
+            removed + ' connection(s) removed)', 'success');
+        showToast('"' + label + '" deleted', 'error');
+    }
+
+    /* ======================================================================
+       6. CONNEXIONS
+       ====================================================================== */
 
     function handleNodeClick(nodeId) {
         if (linkModeSourceId && linkModeSourceId !== nodeId) {
@@ -434,133 +350,74 @@ $(function() {
         selectNode(nodeId);
     }
 
-    $canvas.on('dblclick', '.graph-node', function(e) {
-        e.stopPropagation();
-        if (linkModeSourceId) $('#' + linkModeSourceId).removeClass('link-source');
-        linkModeSourceId = $(this).attr('id');
-        $(this).addClass('link-source');
-        log(`Connection mode enabled from "<strong>${graphState.nodes[linkModeSourceId].data.name}</strong>". Click on the target.`, "info");
-    });
-
     function attemptConnection(fromId, toId) {
         const fromNode = graphState.nodes[fromId];
         const toNode = graphState.nodes[toId];
+        if (!fromNode || !toNode) return;
 
-        // 🎯 Extract the generic type (e.g. "Ax" from "Ax_Eat")
-        const fromGenericType = fromNode.type.split('_')[0];
-        const toGenericType = toNode.type.split('_')[0];
+        const fromT = genericType(fromNode.type);
+        const toT = genericType(toNode.type);
 
-        // --- Rule 1: allowed type? ---
-        const allowedTargets = connectionRules[fromGenericType] || [];
-        if (!allowedTargets.includes(toGenericType)) {
-            log(`Connection refused: "${fromGenericType}" → "${toGenericType}" not allowed`, "error");
-            showToast(`Invalid rule: ${fromGenericType} → ${toGenericType}`, "error");
+        // Règle 1 : type de cible autorisé ?
+        if (!(connectionRules[fromT] || []).includes(toT)) {
+            log('Connection refused: "' + fromT + '" → "' + toT + '" not allowed', 'error');
+            showToast('Invalid rule: ' + fromT + ' → ' + toT, 'error');
             return;
         }
 
-        // --- Rule 2: connection already exists? ---
-        const exists = graphState.connections.some(c => c.from === fromId && c.to === toId);
-        if (exists) {
-            log("This connection already exists", "error");
-            showToast("Connection already exists", "error");
+        // Règle 2 : doublon ?
+        if (graphState.connections.some(c => c.from === fromId && c.to === toId)) {
+            log('This connection already exists', 'error');
+            showToast('Connection already exists', 'error');
             return;
         }
 
-        // --- Rule 3: specific limit (source.type → target.type) ---
-        const limitsForSourceType = connectionLimits[fromGenericType];
-        if (limitsForSourceType && limitsForSourceType[toGenericType] !== undefined) {
-            const maxAllowed = limitsForSourceType[toGenericType];
-            const currentCount = graphState.connections.filter(c => {
-                const cFromGenericType = graphState.nodes[c.from].type.split('_')[0];
-                const cToGenericType = graphState.nodes[c.to].type.split('_')[0];
-                return c.from === fromId && cFromGenericType === fromGenericType && cToGenericType === toGenericType;
-            }).length;
+        // Règle 3 : limite sortante (source -> type cible)
+        const limits = connectionLimits[fromT];
+        if (limits && limits[toT] !== undefined) {
+            const max = limits[toT];
+            const count = graphState.connections.filter(c =>
+                c.from === fromId && genericType(graphState.nodes[c.to].type) === toT
+            ).length;
 
-            if (currentCount >= maxAllowed) {
-                const label = fromNode.data.name || fromGenericType;
-                log(`Connection refused: "${label}" has already reached its limit of ${maxAllowed} connection(s) to "${toGenericType}"`, "error");
-                showToast(`Limit reached: ${fromGenericType} → ${toGenericType} (max ${maxAllowed})`, "error");
+            if (count >= max) {
+                const label = fromNode.data.name || fromT;
+                log('Connection refused: "' + escapeHtml(label) + '" already reached its limit of ' +
+                    max + ' connection(s) to "' + toT + '"', 'error');
+                showToast('Limit reached: ' + fromT + ' → ' + toT + ' (max ' + max + ')', 'error');
                 return;
             }
         }
 
-        // --- Rule 4: global incoming limit for the target type ---
-        const maxIncoming = incomingLimits[toGenericType];
-        if (maxIncoming !== undefined) {
-            const currentIncoming = graphState.connections.filter(c => c.to === toId).length;
-            if (currentIncoming >= maxIncoming) {
-                const label = toNode.data.name || toGenericType;
-                log(`Connection refused: "${label}" has already reached its limit of ${maxIncoming} incoming connection(s)`, "error");
-                showToast(`Limit reached: ${toGenericType} can only receive ${maxIncoming} connection(s)`, "error");
+        // Règle 4 : limite entrante globale de la cible
+        const maxIn = incomingLimits[toT];
+        if (maxIn !== undefined) {
+            const currentIn = graphState.connections.filter(c => c.to === toId).length;
+            if (currentIn >= maxIn) {
+                const label = toNode.data.name || toT;
+                log('Connection refused: "' + escapeHtml(label) + '" already reached its limit of ' +
+                    maxIn + ' incoming connection(s)', 'error');
+                showToast('Limit reached: ' + toT + ' can only receive ' + maxIn + ' connection(s)', 'error');
                 return;
             }
         }
 
-        // ✅ All rules pass
         graphState.connections.push({ from: fromId, to: toId });
         redrawAllConnections();
-        log(`Connection created: <strong>${fromNode.data.name}</strong> → <strong>${toNode.data.name}</strong>`, "success");
+        log('Connection created: <strong>' + escapeHtml(fromNode.data.name || fromId) +
+            '</strong> → <strong>' + escapeHtml(toNode.data.name || toId) + '</strong>', 'success');
     }
 
-    function showToast(message, type) {
-        const bgColor = type === 'error' ? '#f87171' : '#4ade80';
-        const $toast = $(`<div style="position:fixed; top:70px; right:20px; background:${bgColor}; color:#fff; padding:12px 20px; border-radius:8px; box-shadow:0 4px 15px rgba(0,0,0,0.3); z-index:9999; font-size:14px; font-weight:600;">${message}</div>`);
-        $('body').append($toast);
-        setTimeout(() => $toast.fadeOut(300, function() { $(this).remove(); }), 3000);
-    }
+    /* ======================================================================
+       7. PANNEAU DE PROPRIÉTÉS
+       ====================================================================== */
 
-    function redrawAllConnections() {
-        const svg = document.getElementById('connectionsSvg');
-        svg.querySelectorAll('line').forEach(l => l.remove());
-        graphState.connections.forEach(conn => drawConnectionLine(conn.from, conn.to));
-    }
-
-    function drawConnectionLine(fromId, toId) {
-        const $from = $('#' + fromId);
-        const $to = $('#' + toId);
-        if (!$from.length || !$to.length) return;
-
-        const fromPos = $from.position();
-        const toPos = $to.position();
-        const x1 = fromPos.left + $from.outerWidth() / 2;
-        const y1 = fromPos.top + $from.outerHeight() / 2;
-        const x2 = toPos.left + $to.outerWidth() / 2;
-        const y2 = toPos.top + $to.outerHeight() / 2;
-
-        const svgNS = "http://www.w3.org/2000/svg";
-        const line = document.createElementNS(svgNS, "line");
-        line.setAttribute("x1", x1);
-        line.setAttribute("y1", y1);
-        line.setAttribute("x2", x2);
-        line.setAttribute("y2", y2);
-        line.setAttribute("stroke", "#7c5cff");
-        line.setAttribute("stroke-width", "2.5");
-        line.setAttribute("marker-end", "url(#arrowhead)");
-        line.setAttribute("opacity", "0.85");
-        document.getElementById('connectionsSvg').appendChild(line);
-    }
-
-    function initSvgDefs() {
-        const svgNS = "http://www.w3.org/2000/svg";
-        const defs = document.createElementNS(svgNS, "defs");
-        defs.innerHTML = `<marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" fill="#7c5cff"/></marker>`;
-        document.getElementById('connectionsSvg').appendChild(defs);
-    }
-    initSvgDefs();
-
-    $canvas.on('click', function() {
-        selectNode(null);
-        if (linkModeSourceId) $('#' + linkModeSourceId).removeClass('link-source');
-        linkModeSourceId = null;
-    });
-
-    /* ============ RIGHT PANEL ============ */
     function selectNode(nodeId) {
         selectedNodeId = nodeId;
         $('.graph-node').removeClass('selected');
 
-        if (!nodeId) {
+        if (!nodeId || !graphState.nodes[nodeId]) {
+            selectedNodeId = null;
             $('#noSelectionMsg').show();
             $('#propertiesForm').hide().empty();
             return;
@@ -573,288 +430,651 @@ $(function() {
         $('#noSelectionMsg').hide();
         const $form = $('#propertiesForm').empty().show();
 
-        $form.append(`
-            <div class="node-header-badge">
-                <div class="badge-icon">${node.type}</div>
-                <div class="badge-text">
-                    <strong>${node.data.name || node.type}</strong>
-                    <small>ID: ${node.id}</small>
-                </div>
-            </div>
-        `);
+        $form.append(
+            '<div class="node-header-badge">' +
+                '<div class="badge-icon">' + escapeHtml(genericType(node.type)) + '</div>' +
+                '<div class="badge-text">' +
+                    '<strong>' + escapeHtml(node.data.name || node.type) + '</strong>' +
+                    '<small>ID: ' + escapeHtml(node.id) + '</small>' +
+                '</div>' +
+            '</div>'
+        );
 
-        schema.forEach(field => {
-            const currentValue = node.data[field.name] !== undefined ? node.data[field.name] : field.default;
-            let $inputGroup = $('<div class="form-group"></div>');
-            
-            const label = field.label || field.name;
-            $inputGroup.append(`<label class="form-label">${label}</label>`);
+        schema.forEach(function (field) {
+            const value = (node.data[field.name] !== undefined) ? node.data[field.name] : field.default;
+            const $group = $('<div class="form-group"></div>')
+                .append('<label class="form-label">' + escapeHtml(field.label || field.name) + '</label>');
 
             let $input;
-            
-            // 🎯 Readonly field for subtype
-            if (field.readonly) {
-                $input = $(`<input type="text" class="form-control form-control-sm" readonly>`).val(currentValue);
-            } else if (field.type === 'textarea') {
-                $input = $(`<textarea class="form-control form-control-sm" rows="3"></textarea>`).val(currentValue);
+
+            if (field.type === 'textarea') {
+                $input = $('<textarea class="form-control form-control-sm" rows="3"></textarea>').val(value);
             } else if (field.type === 'select') {
                 $input = $('<select class="form-select form-select-sm"></select>');
-                field.options.forEach(opt => {
-                    const optValue = typeof opt === 'string' ? opt : opt.value;
-                    const optLabel = typeof opt === 'string' ? opt : opt.text;
-                    $input.append(`<option value="${optValue}" ${optValue === currentValue ? 'selected' : ''}>${optLabel}</option>`);
+                (field.options || []).forEach(function (opt) {
+                    const v = (typeof opt === 'string') ? opt : opt.value;
+                    const t = (typeof opt === 'string') ? opt : opt.text;
+                    $('<option></option>').attr('value', v).text(t)
+                        .prop('selected', String(v) === String(value))
+                        .appendTo($input);
                 });
             } else {
-                $input = $(`<input type="${field.type}" class="form-control form-control-sm">`).val(currentValue);
+                $input = $('<input class="form-control form-control-sm">')
+                    .attr('type', field.type || 'text').val(value);
             }
 
             $input.attr('data-field', field.name);
-            if (field.readonly) $input.prop('disabled', true);
-            
-            $inputGroup.append($input);
-            $form.append($inputGroup);
+
+            // Champ en lecture seule : on désactive SANS empêcher la sérialisation
+            if (field.readonly) {
+                $input.prop('readonly', true).prop('disabled', true).addClass('is-readonly');
+            }
+
+            $group.append($input);
+            $form.append($group);
         });
 
-        $form.append(`
-            <div class="text-center mt-3" style="font-size: 12px; color: var(--text-secondary);">
-                <i class="bi bi-keyboard"></i> Press <kbd>Delete</kbd> to remove this component
-            </div>
-        `);
+        $form.append(
+            '<div class="text-center mt-3" style="font-size:12px;color:var(--text-secondary);">' +
+            '<i class="bi bi-keyboard"></i> Press <kbd>Delete</kbd> to remove this component</div>'
+        );
 
-        $form.find('[data-field]').not('[readonly]').on('input change', function() {
+        // Un seul binding, filtré sur les champs éditables
+        $form.find('[data-field]').not('.is-readonly').on('input change', function () {
             const fieldName = $(this).data('field');
             const value = $(this).val();
             node.data[fieldName] = value;
 
             if (fieldName === 'name') {
                 $('#' + node.id).text(value);
-                $('.node-header-badge strong').text(value);
+                $form.find('.node-header-badge strong').text(value);
                 redrawAllConnections();
             }
-            log(`Property "${fieldName}" updated → "${value}"`);
+            log('Property "' + escapeHtml(fieldName) + '" updated → "' + escapeHtml(value) + '"');
         });
     }
 
-    /* ============ ZOOM ============ */
-    function applyZoom() {
-        $('#graphCanvas').css('transform', `scale(${zoomLevel})`);
-        $('#graphCanvas').css('transform-origin', '0 0');
-    }
-    
-    $('#zoomIn').on('click', function() { zoomLevel = Math.min(2, zoomLevel + 0.1); applyZoom(); });
-    $('#zoomOut').on('click', function() { zoomLevel = Math.max(0.5, zoomLevel - 0.1); applyZoom(); });
-    $('#resetZoom').on('click', function() { zoomLevel = 1; applyZoom(); });
+    /* ======================================================================
+       8. IMPORT / EXPORT / CHARGEMENT
+       ====================================================================== */
 
-    /* ============ MENUS ============ */
-    $('#btnClearGraph').on('click', function(e) {
-        e.preventDefault();
-        if (confirm("Are you sure you want to clear the entire graph?")) {
-            graphState.nodes = {};
-            graphState.connections = [];
-            $canvas.find('.graph-node').remove();
-            $('#connectionsSvg').find('line').remove();
-            selectNode(null);
-            $('#emptyHint').show();
-            log("Graph cleared", "info");
+    /**
+     * Hydrate le graphe depuis un objet {nodes, connections}.
+     * `nodes` accepte un tableau OU un objet indexé par id.
+     */
+    function hydrateGraph(model) {
+        if (!model) {
+            showToast('Invalid project data', 'error');
+            return false;
         }
-    });
+        const src = model.graphState ? model.graphState : model;
+        const rawNodes = src.nodes;
+        const rawConns = Array.isArray(src.connections) ? src.connections : [];
 
-    function clearCanvas(askConfirmation = true) {
-        if (askConfirmation && !confirm("Clear the graph?")) return;
-        
-        graphState.nodes = {};
-        graphState.connections = [];
-        $canvas.find('.graph-node').remove();
-        $('#connectionsSvg').find('line').remove();
-        selectNode(null);
-        $('#emptyHint').show();
-    }
+        if (!rawNodes || typeof rawNodes !== 'object') {
+            log('Invalid project data: nodes missing', 'error');
+            showToast('Invalid project data: nodes missing', 'error');
+            return false;
+        }
 
-    $('#btnValidateGraph').on('click', function(e) {
-        e.preventDefault();
-        let errors = 0;
+        clearCanvas(false);
 
-        graphState.connections.forEach(conn => {
-            const fromGenericType = graphState.nodes[conn.from].type.split('_')[0];
-            const toGenericType = graphState.nodes[conn.to].type.split('_')[0];
-            
-            if (!(connectionRules[fromGenericType] || []).includes(toGenericType)) {
-                errors++;
-                log(`Error: ${fromGenericType} → ${toGenericType} not allowed`, "error");
+        const list = Array.isArray(rawNodes) ? rawNodes : Object.values(rawNodes);
+
+        list.forEach(function (n) {
+            if (!n || !n.id) return;
+            /*
+            if (!propertiesSchema[n.type]) {
+                log('Unknown component type ignored: "' + escapeHtml(n.type) + '"', 'error');
+                return;
+            }
+            */
+
+            graphState.nodes[n.id] = {
+                id: n.id,
+                type: n.type,
+                x: Number(n.x) || 0,
+                y: Number(n.y) || 0,
+                data: n.data || {}
+            };
+            renderNode(graphState.nodes[n.id]);
+
+            const num = parseInt(String(n.id).replace('node_', ''), 10);
+            if (!isNaN(num) && num > nodeCounter) nodeCounter = num;
+        });
+
+        rawConns.forEach(function (c) {
+            if (graphState.nodes[c.from] && graphState.nodes[c.to]) {
+                graphState.connections.push({ from: c.from, to: c.to });
             }
         });
 
-        Object.keys(graphState.nodes).forEach(nodeId => {
-            const node = graphState.nodes[nodeId];
-            const nodeGenericType = node.type.split('_')[0];
-            const limits = connectionLimits[nodeGenericType];
-            
-            if (!limits) return;
+        redrawAllConnections();
+        $('#emptyHint').toggle(Object.keys(graphState.nodes).length === 0);
 
-            Object.keys(limits).forEach(targetType => {
-                const maxAllowed = limits[targetType];
-                const count = graphState.connections.filter(c => {
-                    const cToGenericType = graphState.nodes[c.to].type.split('_')[0];
-                    return c.from === nodeId && cToGenericType === targetType;
-                }).length;
+        log('Project loaded: <strong>' + Object.keys(graphState.nodes).length +
+            '</strong> nodes, <strong>' + graphState.connections.length + '</strong> connections', 'success');
+        return true;
+    }
 
-                if (count > maxAllowed) {
-                    errors++;
-                    log(`Error: "${node.data.name || nodeGenericType}" has ${count} connection(s) to "${targetType}" (max ${maxAllowed})`, "error");
+    function loadGraphFromJSON(data) {
+        if (!data || !data.nodes) {
+            log("Invalid JSON structure: missing 'nodes' property", 'error');
+            showToast('Invalid JSON structure', 'error');
+            return;
+        }
+        if (!confirm('Importing this file will replace the current graph. Continue?')) return;
+
+        if (hydrateGraph(data)) showToast('Import successful', 'success');
+    }
+
+    function exportGraphToJSON() {
+        return {
+            meta: {
+                appName: 'GraphStudio',
+                version: '1.0',
+                exportedAt: new Date().toISOString(),
+                nodeCount: Object.keys(graphState.nodes).length,
+                connectionCount: graphState.connections.length
+            },
+            nodes: Object.values(graphState.nodes).map(n => ({
+                id: n.id, type: n.type, x: n.x, y: n.y, data: n.data
+            })),
+            connections: graphState.connections.map(c => ({ from: c.from, to: c.to }))
+        };
+    }
+
+    function downloadGraphAsJSON() {
+        const data = exportGraphToJSON();
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+        const filename = 'Animeta-export-' + stamp + '.anmt';
+
+        const $link = $('<a>').attr({ href: url, download: filename }).appendTo('body');
+        $link[0].click();
+        $link.remove();
+        URL.revokeObjectURL(url);
+
+        log('Model: <strong>' + filename + '</strong> (' + data.nodes.length +
+            ' component(s), ' + data.connections.length + ' connection(s))', 'success');
+        showToast('Export successful: ' + filename, 'success');
+    }
+
+    /** Appelée depuis le HTML : onclick="GraphStudio.openProject('id')" */
+    function openProject(id) {
+        $.ajax({
+            url: '/modeling/api/project/' + encodeURIComponent(id),
+            method: 'GET',
+            dataType: 'json'
+        })
+        .done(function (response) {
+            let model = response && response.data ? response.data.jsondata : null;
+            if (typeof model === 'string') {
+                try { model = JSON.parse(model); }
+                catch (e) {
+                    showToast('Corrupted project data', 'error');
+                    return;
                 }
-            });
+            }
+            if (!hydrateGraph(model)) return;
+
+            loadedModel.id = id;
+            loadedModel.modelName = (model && model.loadedModel && model.loadedModel.modelName) ||
+                                    (response.data && response.data.name) || null;
+            loadedModel.filename = loadedModel.modelName;
+
+            showToast('Project loaded!', 'success');
+            $('#projectModal').fadeOut();
+        })
+        .fail(function (xhr, status, error) {
+            console.error('[GraphStudio] HTTP error:', error);
+            showToast('Failed to load project', 'error');
+        });
+    }
+
+    /* ======================================================================
+       9. VALIDATION
+       ====================================================================== */
+
+    /** Retourne null si le nœud est valide, sinon un message d'erreur. */
+    function verifyNode(nodeDetails) {
+        const t = genericType(nodeDetails.type);
+
+        // a) Les propriétés obligatoires ne doivent pas être vides
+        const schema = propertiesSchema[nodeDetails.type] || [];
+        const emptyFields = schema
+            .filter(f => !f.readonly)
+            .filter(f => {
+                const v = nodeDetails.properties[f.name];
+                return v === undefined || v === null || String(v).trim() === '';
+            })
+            .map(f => f.label || f.name);
+
+        if (emptyFields.length) {
+            return 'Node "' + (nodeDetails.properties.name || nodeDetails.id) +
+                   '" (' + t + '): empty field(s) → ' + emptyFields.join(', ');
+        }
+
+        // b) Un nœud non-racine doit avoir un parent (PM = racine)
+        if (t !== 'PM' && nodeDetails.incomingConnections.length === 0) {
+            return 'Node "' + (nodeDetails.properties.name || nodeDetails.id) +
+                   '" (' + t + '): no incoming connection (orphan node)';
+        }
+
+        // c) Un nœud qui doit propager doit avoir au moins une sortie
+        const mustHaveChild = connectionRules[t] && connectionRules[t].length > 0;
+        if (mustHaveChild && nodeDetails.outgoingConnections.length === 0) {
+            return 'Node "' + (nodeDetails.properties.name || nodeDetails.id) +
+                   '" (' + t + '): expects at least one outgoing connection to ' +
+                   connectionRules[t].join(' / ');
+        }
+
+        return null; // valide
+    }
+
+    function verifyAndDisplayGraphDetails() {
+        if (Object.keys(graphState.nodes).length === 0) {
+            showToast('The graph is empty', 'error');
+            log('Empty graph: no node to verify', 'error');
+            return false;
+        }
+
+        const errors = [];
+
+        Object.keys(graphState.nodes).forEach(function (nodeId) {
+            const node = graphState.nodes[nodeId];
+
+            const incoming = graphState.connections.filter(c => c.to === nodeId);
+            const outgoing = graphState.connections.filter(c => c.from === nodeId);
+
+            const details = {
+                id: node.id,
+                type: node.type,
+                position: { x: node.x, y: node.y },
+                properties: node.data || {},
+                incomingConnections: incoming.map(c => ({
+                    from: c.from,
+                    fromLabel: graphState.nodes[c.from].data.name || graphState.nodes[c.from].type,
+                    fromType: graphState.nodes[c.from].type
+                })),
+                outgoingConnections: outgoing.map(c => ({
+                    to: c.to,
+                    toLabel: graphState.nodes[c.to].data.name || graphState.nodes[c.to].type,
+                    toType: graphState.nodes[c.to].type
+                }))
+            };
+
+            const err = verifyNode(details);
+            if (err) errors.push(err);
         });
 
-        Object.keys(graphState.nodes).forEach(nodeId => {
-            const node = graphState.nodes[nodeId];
-            const nodeGenericType = node.type.split('_')[0];
-            const maxIncoming = incomingLimits[nodeGenericType];
-            
-            if (maxIncoming === undefined) return;
+        if (errors.length === 0) {
+            showToast('Your model is valid and can be submitted for processing', 'success');
+            log('Your model is valid and can be submitted for processing', 'success');
+            return true;
+        }
 
-            const count = graphState.connections.filter(c => c.to === nodeId).length;
-            if (count > maxIncoming) {
+        showToast(errors.length + ' error(s) detected in your model', 'error');
+        errors.forEach(e => log('&nbsp;&nbsp;• ' + escapeHtml(e), 'error'));
+        return false;
+    }
+
+    function validateConnections() {
+        let errors = 0;
+
+        graphState.connections.forEach(function (c) {
+            const f = genericType(graphState.nodes[c.from].type);
+            const t = genericType(graphState.nodes[c.to].type);
+            if (!(connectionRules[f] || []).includes(t)) {
                 errors++;
-                log(`Error: "${node.data.name || nodeGenericType}" has ${count} incoming connection(s) (max ${maxIncoming})`, "error");
+                log('Error: ' + f + ' → ' + t + ' not allowed', 'error');
+            }
+        });
+
+        Object.keys(graphState.nodes).forEach(function (nodeId) {
+            const node = graphState.nodes[nodeId];
+            const t = genericType(node.type);
+            const label = node.data.name || t;
+
+            const limits = connectionLimits[t];
+            if (limits) {
+                Object.keys(limits).forEach(function (target) {
+                    const count = graphState.connections.filter(c =>
+                        c.from === nodeId && genericType(graphState.nodes[c.to].type) === target
+                    ).length;
+                    if (count > limits[target]) {
+                        errors++;
+                        log('Error: "' + escapeHtml(label) + '" has ' + count +
+                            ' connection(s) to "' + target + '" (max ' + limits[target] + ')', 'error');
+                    }
+                });
+            }
+
+            const maxIn = incomingLimits[t];
+            if (maxIn !== undefined) {
+                const count = graphState.connections.filter(c => c.to === nodeId).length;
+                if (count > maxIn) {
+                    errors++;
+                    log('Error: "' + escapeHtml(label) + '" has ' + count +
+                        ' incoming connection(s) (max ' + maxIn + ')', 'error');
+                }
             }
         });
 
         if (errors === 0) {
-            log("✓ Validation successful: all connections are valid", "success");
-            showToast("Validation successful!", "success");
+            log('✓ Validation successful: all connections are valid', 'success');
+            showToast('Validation successful!', 'success');
         } else {
-            log(`Validation completed with ${errors} error(s)`, "error");
-            showToast(`${errors} error(s) found`, "error");
+            log('Validation completed with ' + errors + ' error(s)', 'error');
+            showToast(errors + ' error(s) found', 'error');
         }
-    });
-
-    $('#btnAutoLayout').on('click', function(e) {
-        e.preventDefault();
-        log("Automatic graph layout in progress...", "info");
-    });
-
-    $('#btnSave').on('click', async function() {
-        graphState.loadedModel = loadedModel;
-        const json = JSON.stringify(graphState, null, 2);
-        log(`Graph saved — ${Object.keys(graphState.nodes).length} nodes, ${graphState.connections.length} connections`, "success");
-        try {
-            const response = await fetch('/modeling/save', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-                body: json
-            });
-
-            if (!response.ok) {
-                throw new Error(`Server error: ${response.status}`);
-            }
-            const result = await response.json();
-            console.log('Success:', result);
-            showToast("Save successful!", "success");
-
-        } catch (error) {
-            showToast("Save Failed!", "error");
-            throw error;
-        }
-
-    });
-
-    $('#btnRunSimulation').on('click', function(e) {
-        e.preventDefault();
-        log("Simulation started...", "info");
-    });
-
-    $('#btnOpenProject').on('click', function(e) { e.preventDefault(); alert("This feature will be available soon.") });
-
-    /* ============ RESPONSIVE TOGGLE ============ */
-    $('#toggleLeftPanel').on('click', function() { $('#leftPanel').slideToggle(); });
-    $('#toggleRightPanel').on('click', function() { $('#rightPanel').slideToggle(); });
-
-    log("Application initialized successfully ");
-    log("Drag a component from the left panel to the central canvas");
-
-    $('#btnNewProject').on('click', function(e) {
-        e.preventDefault();
-        if(confirm("Do you really want to create a new project? All unsaved current data will be lost.")){
-            location.reload();
-        }
-    });
-
-    /* ============ DETAILED GRAPH VERIFICATION ============ */
-    $('#btnVerify').on('click', function(e) {
-        e.preventDefault();
-        verifyAndDisplayGraphDetails();
-    });
-
-
-    document.getElementById('btnGoHome').addEventListener('click', function() {
-        if(confirm('Do you really want to quit ? ')){
-            window.location.href = '/';
-        }
-    });
-
-
-    /**
-     * Retrieves and displays the complete details of each node with its connections and properties
-     */
-    function verifyAndDisplayGraphDetails() {
-        if (Object.keys(graphState.nodes).length === 0) {
-            showToast("The graph is empty", "error");
-            log("Empty graph: no node to verify", "error");
-            return;
-        }
-        const graphReport = {
-            totalNodes: Object.keys(graphState.nodes).length,
-            totalConnections: graphState.connections.length,
-            nodes: []
-        };
-
-        let verifyErrors = [];
-
-        // 🎯 Iterate over all nodes
-        Object.keys(graphState.nodes).forEach((nodeId, index) => {
-            const node = graphState.nodes[nodeId];
-
-            // Incoming connections (pointing to this node)
-            const incomingConnections = graphState.connections.filter(c => c.to === nodeId);
-            
-            // Outgoing connections (starting from this node)
-            const outgoingConnections = graphState.connections.filter(c => c.from === nodeId);
-
-            // Node details
-            const nodeDetails = {
-                id: node.id,
-                type: node.type,
-                position: { x: node.x, y: node.y },
-                properties: node.data,
-                incomingConnections: incomingConnections.map(conn => ({
-                    from: conn.from,
-                    fromLabel: graphState.nodes[conn.from].data.name || graphState.nodes[conn.from].type,
-                    fromType: graphState.nodes[conn.from].type
-                })),
-                outgoingConnections: outgoingConnections.map(conn => ({
-                    to: conn.to,
-                    toLabel: graphState.nodes[conn.to].data.name || graphState.nodes[conn.to].type,
-                    toType: graphState.nodes[conn.to].type
-                }))
-            };
-            let vNode = verifyNode(nodeDetails)
-            if (vNode != -256){
-                verifyErrors.push(vNode);
-            }
-        });
-        if(verifyErrors.length == 0){
-            showToast("Your model is valid and can be submitted for processing", "success");
-            log("Your model is valid and can be submitted for processing", "success");
-        }
-        else{
-            showToast(verifyErrors.length + " error(s) detected in your model", "error");
-            for (let index = 0; index < verifyErrors.length; index++) {
-                const element = verifyErrors[index];
-                log('\t'+element, "error");
-            }
-        }
+        return errors;
     }
 
-});
+    /* ======================================================================
+       10. UI : PANNEAU GAUCHE (ACTIONS)
+       ====================================================================== */
+
+    function buildActionsPanel() {
+        const $panel = $('#leftPanel');
+        if (!$panel.length) return;
+
+        const $container = $('<div class="component-group"></div>');
+        Object.keys(actionKeyMap).forEach(function (key) {
+            const action = actionKeyMap[key];
+            $container.append(
+                '<div class="component-item" draggable="true" ' +
+                'data-type="' + key + '" data-subtype="' + escapeHtml(action.subtype) + '">' +
+                '<div class="icon-badge">Ax</div>' +
+                '<span>' + escapeHtml(action.name) + '</span></div>'
+            );
+        });
+        $panel.append($container);
+    }
+
+    /* ======================================================================
+       11. BINDINGS
+       ====================================================================== */
+
+    function bindEvents() {
+
+        /* --- Recherche --- */
+        $('#componentSearch').on('input', function () {
+            const q = $(this).val().toLowerCase();
+            $('.component-item').each(function () {
+                $(this).toggle($(this).text().toLowerCase().includes(q));
+            });
+        });
+
+        /* --- Drag & drop (délégué : couvre les items générés dynamiquement) --- */
+        $(document).on('dragstart', '.component-item', function (e) {
+            const dt = e.originalEvent.dataTransfer;
+            dt.setData('componentType', $(this).data('type'));
+            dt.setData('componentLabel', $(this).find('span').text());
+            dt.setData('subtype', $(this).data('subtype') || '');
+        });
+
+        $canvas.on('dragover', function (e) { e.preventDefault(); });
+
+        $canvas.on('drop', function (e) {
+            e.preventDefault();
+            const dt = e.originalEvent.dataTransfer;
+            const type = dt.getData('componentType');
+            const label = dt.getData('componentLabel');
+            if (!type) return;
+
+            const off = $canvas.offset();
+            const x = (e.originalEvent.pageX - off.left + $canvas.scrollLeft()) / zoomLevel - 65;
+            const y = (e.originalEvent.pageY - off.top + $canvas.scrollTop()) / zoomLevel - 25;
+
+            createNode(type, label, Math.max(0, x), Math.max(0, y));
+        });
+
+        /* --- Mode connexion (double-clic) --- */
+        $canvas.on('dblclick', '.graph-node', function (e) {
+            e.stopPropagation();
+            if (linkModeSourceId) $('#' + linkModeSourceId).removeClass('link-source');
+            linkModeSourceId = $(this).attr('id');
+            $(this).addClass('link-source');
+            const n = graphState.nodes[linkModeSourceId];
+            log('Connection mode enabled from "<strong>' +
+                escapeHtml(n.data.name || n.type) + '</strong>". Click on the target.', 'info');
+        });
+
+        $canvas.on('click', function () {
+            selectNode(null);
+            if (linkModeSourceId) $('#' + linkModeSourceId).removeClass('link-source');
+            linkModeSourceId = null;
+        });
+
+        /* --- Clavier --- */
+        $(document).on('keydown', function (e) {
+            if ($(e.target).is('input, textarea, select')) return;
+
+            if (e.key === 'Escape') {
+                $('#projectModal').fadeOut();
+                if (linkModeSourceId) {
+                    $('#' + linkModeSourceId).removeClass('link-source');
+                    linkModeSourceId = null;
+                }
+                return;
+            }
+            if ((e.key === 'Delete' || e.key === 'Backspace') && selectedNodeId) {
+                e.preventDefault();
+                deleteNode(selectedNodeId);
+            }
+        });
+
+        /* --- Import --- */
+        $('#btnImportJSON').on('click', function (e) {
+            e.preventDefault();
+            $('#fileImportInput').trigger('click');
+        });
+
+        $('#fileImportInput').on('change', function (e) {
+            const file = e.target.files[0];
+            const $input = $(this);
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (ev) {
+                try {
+                    loadGraphFromJSON(JSON.parse(ev.target.result));
+                } catch (err) {
+                    log('Import error: invalid JSON file', 'error');
+                    showToast('Invalid JSON file', 'error');
+                } finally {
+                    $input.val('');
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        /* --- Export --- */
+        $('#btnExportJSON').on('click', function (e) {
+            e.preventDefault();
+            if (Object.keys(graphState.nodes).length === 0) {
+                showToast('The graph is empty, nothing to export', 'error');
+                return;
+            }
+            if (!verifyAndDisplayGraphDetails()) return; // ⚠️ appel effectif
+            downloadGraphAsJSON();
+        });
+
+        /* --- Zoom --- */
+        function applyZoom() {
+            $canvas.css({ transform: 'scale(' + zoomLevel + ')', transformOrigin: '0 0' });
+        }
+        $('#zoomIn').on('click',    function () { zoomLevel = Math.min(2, zoomLevel + 0.1); applyZoom(); });
+        $('#zoomOut').on('click',   function () { zoomLevel = Math.max(0.5, zoomLevel - 0.1); applyZoom(); });
+        $('#resetZoom').on('click', function () { zoomLevel = 1; applyZoom(); });
+
+        /* --- Menus --- */
+        $('#btnClearGraph').on('click', function (e) {
+            e.preventDefault();
+            if (clearCanvas(true)) log('Graph cleared', 'info');
+        });
+
+        $('#btnValidateGraph').on('click', function (e) {
+            e.preventDefault();
+            validateConnections();
+        });
+
+        $('#btnVerify').on('click', function (e) {
+            e.preventDefault();
+            verifyAndDisplayGraphDetails();
+        });
+
+        $('#btnAutoLayout').on('click', function (e) {
+            e.preventDefault();
+            log('Automatic graph layout in progress...', 'info');
+        });
+
+        $('#btnRunSimulation').on('click', function (e) {
+            e.preventDefault();
+            log('Simulation started...', 'info');
+        });
+
+        $('#btnNewProject').on('click', function (e) {
+            e.preventDefault();
+            if (confirm('Do you really want to create a new project? All unsaved current data will be lost.')) {
+                location.reload();
+            }
+        });
+
+        $('#btnGoHome').on('click', function () {
+            if (confirm('Do you really want to quit? All unsaved current data will be lost')) {
+                window.location.href = '/';
+            }
+        });
+
+        $('#clearConsole').on('click', function () {
+            $('#consoleLog').empty();
+            log('Console cleared.');
+        });
+
+        /* --- Sauvegarde --- */
+        $('#btnSave').on('click', function () {
+            if (!loadedModel.modelName) {
+                const name = prompt('Save model as :');
+                if (!name) return;
+                loadedModel.filename = name;
+            } else {
+                loadedModel.filename = loadedModel.modelName;
+            }
+
+            const payload = {
+                nodes: graphState.nodes,
+                connections: graphState.connections,
+                loadedModel: loadedModel
+            };
+
+            $.ajax({
+                url: '/modeling/save',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(payload)
+            })
+            .done(function () {
+                loadedModel.modelName = loadedModel.filename;
+                log('Graph saved — ' + Object.keys(graphState.nodes).length + ' nodes, ' +
+                    graphState.connections.length + ' connections', 'success');
+                showToast('Save successful!', 'success');
+            })
+            .fail(function (xhr) {
+                console.error('[GraphStudio] Save failed:', xhr.status, xhr.responseText);
+                showToast('Save Failed!', 'error');
+            });
+        });
+
+        /* --- Modale « Ouvrir un projet » --- */
+        const $modal = $('#projectModal');
+        const $projectList = $('#projectList');
+
+        $('#btnOpenProject').on('click', function (e) {
+            e.preventDefault();
+            $modal.fadeIn();
+            $projectList.html('<p>Chargement...</p>');
+
+            $.ajax({ url: '/modeling/api/projects', method: 'GET', dataType: 'json' })
+                .done(function (response) {
+                    const items = (response && response.data) || [];
+                    if (!items.length) {
+                        $projectList.html('<p>Aucun projet trouvé.</p>');
+                        return;
+                    }
+                    const $ul = $('<ul></ul>');
+                    items.forEach(function (p) {
+                        const date = p.updatedAt ? new Date(p.updatedAt).toLocaleString('fr-FR') : '—';
+                        // ✅ Pas de onclick inline : binding jQuery + data-id
+                        $('<li></li>')
+                            .append(
+                                $('<a href="#" class="project-link"></a>')
+                                    .attr('data-id', p.id)
+                                    .text(p.name + ' (updated at ' + date + ')')
+                            )
+                            .appendTo($ul);
+                    });
+                    $projectList.empty().append($ul);
+                })
+                .fail(function (xhr, status, error) {
+                    console.error('[GraphStudio] HTTP error:', error);
+                    $projectList.html('<p class="error">Impossible de charger les projets.</p>');
+                });
+        });
+
+        $projectList.on('click', '.project-link', function (e) {
+            e.preventDefault();
+            openProject($(this).data('id'));
+        });
+
+        $('.modal-close').on('click', function () { $modal.fadeOut(); });
+        $modal.on('click', function (e) { if (e.target === this) $modal.fadeOut(); });
+
+        /* --- Responsive --- */
+        $('#toggleLeftPanel').on('click',  function () { $('#leftPanel').slideToggle(); });
+        $('#toggleRightPanel').on('click', function () { $('#rightPanel').slideToggle(); });
+    }
+
+    /* ======================================================================
+       12. INITIALISATION
+       ====================================================================== */
+
+    function init() {
+        $canvas = $('#graphCanvas');
+        if (!$canvas.length) {
+            console.error('[GraphStudio] #graphCanvas introuvable — initialisation annulée.');
+            return;
+        }
+
+        initSvgDefs();
+        buildActionsPanel();
+        bindEvents();
+        selectNode(null);
+
+        log('Application initialized successfully');
+        log('Drag a component from the left panel to the central canvas');
+    }
+
+    /* ======================================================================
+       13. API PUBLIQUE
+       ====================================================================== */
+
+    window.GraphStudio = {
+        openProject: openProject,
+        loadGraphFromModel: hydrateGraph,
+        exportGraph: exportGraphToJSON,
+        verify: verifyAndDisplayGraphDetails,
+        validate: validateConnections,
+        clear: clearCanvas,
+        getState: function () { return graphState; },
+        getSchema: function () { return propertiesSchema; }
+    };
+
+    // Rétro-compatibilité avec l'ancien HTML (onclick="openproject('id')")
+    window.openproject = openProject;
+
+    $(init);
+
+})(window, jQuery);
