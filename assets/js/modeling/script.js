@@ -7,16 +7,16 @@
     'use strict';
 
     /* ======================================================================
-       1. DONNÉES SOURCE (ACTIONS)
-       ====================================================================== */
+    1. DONNÉES SOURCE (ACTIONS)
+    ====================================================================== */
 
     const json_actions = `
     [
-        { "name": "Eat",        "id": "Ax", "subtype": "Eat",        "attributs": [{"name":"duration","type":"int"},{"name":"gap","type":"float"}] },
-        { "name": "GetCloser",  "id": "Ax", "subtype": "GetCloser",  "attributs": [{"name":"duration","type":"int"},{"name":"gap","type":"float"}] },
-        { "name": "Sleep",      "id": "Ax", "subtype": "Sleep",      "attributs": [{"name":"duration","type":"int"},{"name":"gap","type":"float"}] },
-        { "name": "RandomMove", "id": "Ax", "subtype": "RandomMove", "attributs": [{"name":"duration","type":"int"},{"name":"gap","type":"float"}] },
-        { "name": "RunAway",    "id": "Ax", "subtype": "RunAway",    "attributs": [{"name":"duration","type":"int"},{"name":"gap","type":"float"}] }
+        { "name": "Eat",        "id": "A", "subtype": "Eat",        "attributs": [{"name":"duration","type":"int"},{"name":"gap","type":"float"}] },
+        { "name": "GetCloser",  "id": "A", "subtype": "GetCloser",  "attributs": [{"name":"duration","type":"int"},{"name":"gap","type":"float"}] },
+        { "name": "Sleep",      "id": "A", "subtype": "Sleep",      "attributs": [{"name":"duration","type":"int"},{"name":"gap","type":"float"}] },
+        { "name": "RandomMove", "id": "A", "subtype": "RandomMove", "attributs": [{"name":"duration","type":"int"},{"name":"gap","type":"float"}] },
+        { "name": "RunAway",    "id": "A", "subtype": "RunAway",    "attributs": [{"name":"duration","type":"int"},{"name":"gap","type":"float"}] }
     ]`;
 
     let actions = [];
@@ -28,8 +28,8 @@
     }
 
     /* ======================================================================
-       2. ÉTAT GLOBAL DU MODULE
-       ====================================================================== */
+    2. ÉTAT GLOBAL DU MODULE
+    ====================================================================== */
 
     // ⚠️ let (et non const) car on réassigne l'objet lors des imports
     let graphState = { nodes: {}, connections: [] };
@@ -47,27 +47,35 @@
     let $canvas = null; // initialisé dans init()
 
     /* ======================================================================
-       3. CONFIGURATION (RÈGLES MÉTIER)
-       ====================================================================== */
+    3. CONFIGURATION (RÈGLES MÉTIER)
+    ====================================================================== */
 
     const connectionRules = {
-        "PM": ["P", "D", "PT"],
-        "P":  ["Px"],
-        "Px": ["Sx"],
-        "D":  ["PD"],
-        "PT": ["Ax", "PA"],
-        "Sx": ["PK"],
-        "PD": ["PT", "PK", "Px"],
+        "M": ["Ps", "Ds", "T"],
+
+        "Ps": ["P"],
+        "P": ["S"],
+        "Ds": ["D", "PD", "P"],
+
+        "D": ["T", "P"],
+        "T": ["A"],
+
+        "PM": ["Ps", "Ds", "PT"],
+
+        "PD": ["PT", "PK", "P"],
+        "PT": ["A", "PA"],
         "PA": ["PK"]
+
     };
 
     const connectionLimits = {
-        "PM": { "PT": 1, "D": 1, "P": 1 },
+        "PM": { "PT": 1, "Ds": 1, "Ps": 1 },
         "P":  { "PM": 1 }
     };
 
     const incomingLimits = {
-        "Sx": 1, "PD": 1, "D": 1, "Ax": 1,
+        "M": 0, "Ps":1,  "Ds":1, "T":1,
+        "S": 1, "PD": 1, "D": 1, "A": 1,
         "PA": 1, "PK": 1, "PT": 1
     };
 
@@ -77,7 +85,7 @@
     const actionKeyMap = {}; // "Ax1" -> objet action (utile pour debug/export)
 
     actions.forEach((action, index) => {
-        const key = `Ax${index + 1}`;
+        const key = `A${index + 1}`;
         actionKeyMap[key] = action;
 
         const schema = [
@@ -107,7 +115,10 @@
         "PM": [
             { name: "name", type: "text", default: "" }
         ],
-        "Px": [
+        "M": [
+            { name: "name", type: "text", default: "" }
+        ],
+        "P": [
             { name: "name", type: "text", default: "" },
             { name: "strength expression", type: "text", default: "" }
         ],
@@ -116,7 +127,7 @@
             { name: "test string", type: "text", default: "" },
             { name: "description", type: "text", default: "" }
         ],
-        "Sx": [
+        "S": [
             { name: "target", type: "text", default: "" },
             { name: "radius", type: "number", default: "" },
             { name: "angle", type: "number", default: "" },
@@ -137,8 +148,8 @@
     };
 
     /* ======================================================================
-       4. UTILITAIRES
-       ====================================================================== */
+    4. UTILITAIRES
+    ====================================================================== */
 
     /** Type générique : "Ax1" / "Ax_Eat" -> "Ax" ; "PM" -> "PM" */
     function genericType(type) {
@@ -193,8 +204,8 @@
     }
 
     /* ======================================================================
-       5. RENDU / MANIPULATION DU GRAPHE
-       ====================================================================== */
+    5. RENDU / MANIPULATION DU GRAPHE
+    ====================================================================== */
 
     function initSvgDefs() {
         const svg = document.getElementById('connectionsSvg');
@@ -337,8 +348,8 @@
     }
 
     /* ======================================================================
-       6. CONNEXIONS
-       ====================================================================== */
+    6. CONNEXIONS
+    ====================================================================== */
 
     function handleNodeClick(nodeId) {
         if (linkModeSourceId && linkModeSourceId !== nodeId) {
@@ -409,8 +420,8 @@
     }
 
     /* ======================================================================
-       7. PANNEAU DE PROPRIÉTÉS
-       ====================================================================== */
+    7. PANNEAU DE PROPRIÉTÉS
+    ====================================================================== */
 
     function selectNode(nodeId) {
         selectedNodeId = nodeId;
@@ -495,8 +506,8 @@
     }
 
     /* ======================================================================
-       8. IMPORT / EXPORT / CHARGEMENT
-       ====================================================================== */
+    8. IMPORT / EXPORT / CHARGEMENT
+    ====================================================================== */
 
     /**
      * Hydrate le graphe depuis un objet {nodes, connections}.
@@ -634,8 +645,8 @@
     }
 
     /* ======================================================================
-       9. VALIDATION
-       ====================================================================== */
+    9. VALIDATION
+    ====================================================================== */
 
     /** Retourne null si le nœud est valide, sinon un message d'erreur. */
     function verifyNode(nodeDetails) {
@@ -773,8 +784,8 @@
     }
 
     /* ======================================================================
-       10. UI : PANNEAU GAUCHE (ACTIONS)
-       ====================================================================== */
+    10. UI : PANNEAU GAUCHE (ACTIONS)
+    ====================================================================== */
 
     function buildActionsPanel() {
         const $panel = $('#leftPanel');
@@ -786,7 +797,7 @@
             $container.append(
                 '<div class="component-item" draggable="true" ' +
                 'data-type="' + key + '" data-subtype="' + escapeHtml(action.subtype) + '">' +
-                '<div class="icon-badge">Ax</div>' +
+                '<div class="icon-badge">A</div>' +
                 '<span>' + escapeHtml(action.name) + '</span></div>'
             );
         });

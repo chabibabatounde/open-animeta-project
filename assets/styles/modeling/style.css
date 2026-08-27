@@ -279,37 +279,46 @@ html, body {
 
 
 
-.component-item[data-type="PM"] .icon-badge { background-color: #4ade80; }
-.component-item[data-type="PM"] { border-left-color: #4ade80; }
+.component-item[data-type="M"] .icon-badge { background-color: #4ade80; }
+.component-item[data-type="M"] { border-left-color: #4ade80; }
+.component-item[data-type="PM"] .icon-badge { background-color: #4ade808f; }
+.component-item[data-type="PM"] { border-left-color: #4ade808f; }
 
 
-.component-item[data-type="Px"] .icon-badge { background-color: #fbbf24; }
-.component-item[data-type="Px"] { border-left-color: #fbbf24; }
+.component-item[data-type="Ps"] .icon-badge { background-color: #fbbf24; }
+.component-item[data-type="Ps"] { border-left-color: #fbbf24; }
 
-.component-item[data-type="Sx"] .icon-badge { background-color: #fbbf24; }
-.component-item[data-type="Sx"] { border-left-color: #fbbf24; }
+.component-item[data-type="P"] .icon-badge { background-color: #fbbe24d1; }
+.component-item[data-type="P"] { border-left-color: #fbbe24d1; }
 
-.component-item[data-type="D"] .icon-badge { background-color: #ff6200; }
-.component-item[data-type="D"] { border-left-color: #ff6200; }
-
-.component-item[data-type="P"] .icon-badge { background-color: #ff6200; }
-.component-item[data-type="P"] { border-left-color: #ff6200; }
+.component-item[data-type="S"] .icon-badge { background-color: #f3c03ed1; }
+.component-item[data-type="S"] { border-left-color: #f3c03ed1; }
 
 
-.component-item[data-type="PD"] .icon-badge{ background-color: #fb7185; } 
-.component-item[data-type="PD"] { border-left-color: #fb7185; }
+.component-item[data-type="Ds"] .icon-badge { background-color: #ff6200; }
+.component-item[data-type="Ds"] { border-left-color: #ff6200; }
+
+.component-item[data-type="D"] .icon-badge { background-color: #ff7700ef; }
+.component-item[data-type="D"] { border-left-color: #ff7700ef; }
 
 
+.component-item[data-type="PD"] .icon-badge{ background-color: #ff770081; } 
+.component-item[data-type="PD"] { border-left-color: #ff770081; }
 
 
-.component-item[data-type="PT"] .icon-badge{ background-color: #fb7185; } 
-.component-item[data-type="PT"] { border-left-color: #fb7185; }
+.component-item[data-type="T"] .icon-badge{ background-color: #fb7185; } 
+.component-item[data-type="T"] { border-left-color: #fb7185; }
 
-.component-item[data-type="PA"] .icon-badge{ background-color: #fb7185; } 
-.component-item[data-type="PA"] { border-left-color: #fb7185; }
+.component-item[data-type="PT"] .icon-badge{ background-color: #fb71858f; } 
+.component-item[data-type="PT"] { border-left-color: #fb71858f; }
 
-.component-item[data-type="PK"] .icon-badge{ background-color: #fb7185; } 
-.component-item[data-type="PK"] { border-left-color: #fb7185; }
+.component-item[data-type="PA"] .icon-badge{ background-color: #af0d7c; } 
+.component-item[data-type="PA"] { border-left-color: #af0d7c; }
+
+.component-item[data-type="PK"] .icon-badge{ background-color: #af0d7c8f; } 
+.component-item[data-type="PK"] { border-left-color: #af0d7c8f; }
+
+
 
 
 /*
