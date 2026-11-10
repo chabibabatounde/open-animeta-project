@@ -7,7 +7,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&family=Consolas&display=swap" rel="stylesheet">
+    <!-- Polices : IBM Plex Sans (texte) et IBM Plex Mono (codes, étiquettes) -->
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/styles/modeling/style.css">
 
 </head>
@@ -45,11 +46,12 @@
 
             <div class="dropdown">
                 <button class="btn btn-menu dropdown-toggle" data-bs-toggle="dropdown">
-                    <i class="bi bi-diagram-2"></i> Environment
+                    <i class="bi bi-diagram-2"></i> Simulation
                 </button>
                 <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#" id="btnAutoLayout"><i class="bi bi-clipboard-plus me-2"></i></i>Create</a></li>
-                    <li><a class="dropdown-item" href="#" id="btnAutoLayout"><i class="bi bi-arrow-down-right-square me-2"></i></i>Load</a></li>
+                    <li><a class="dropdown-item" href="#" id="btnAutoLayout"><i class="bi bi-clipboard-plus me-2"></i>Create environment</a></li>
+                    <li><a class="dropdown-item" href="#" id="btnAutoLayout"><i class="bi bi-arrow-down-right-square me-2"></i>Load environment</a></li>
+                    <li><a class="dropdown-item" href="#" id="btnAutoLayout"><i class="bi bi-send-check me-2"></i>Submit simulation</a></li>
                 </ul>
             </div>
 
@@ -72,9 +74,9 @@
             <button class="btn btn-menu panel-toggle-btn" id="toggleRightPanel">
                 <i class="bi bi-sliders"></i> Properties
             </button>
-            <div id="btnGoHome" class="top-menu-status" style="border: 1px solid white; padding: 7px; border-radius: 4px; cursor: pointer;">
+            <div id="btnGoHome" class="top-menu-status btn-home">
                 <span>
-                    Back to home page
+                    <i class="bi bi-house"></i> Back to home page
                 </span>
             </div>
         </div>
@@ -85,7 +87,7 @@
             <!-- LEFT PANEL -->
             <div class="left-panel" id="leftPanel">
                 <div class="panel-title"><i class="bi bi-boxes"></i> Available components</div>
-                <input type="text" class="search-box" id="componentSearch" placeholder="🔍 Search for a component...">
+                <input type="text" class="search-box" id="componentSearch" placeholder="Search for a component…">
 
                 <div class="component-item" draggable="true" data-type="M">
                     <div class="icon-badge">M</div>
@@ -127,9 +129,6 @@
                     <span>PartialDesire</span>
                 </div>
 
-                
-                
-                
                 <div class="component-item" draggable="true" data-type="T">
                     <div class="icon-badge">T</div>
                     <span>Task</span>
@@ -138,7 +137,6 @@
                     <div class="icon-badge">PT</div>
                     <span>PartialTask</span>
                 </div>
-                
 
                 <div class="component-item" draggable="true" data-type="PA">
                     <div class="icon-badge">PA</div>
@@ -210,12 +208,31 @@
         </div>
     </div>
 
+
+    <button id="btnOpenEnv" type="button">
+        Ouvrir les env
+    </button>
+
+    <div id="envModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>Liste des environments</h2>
+            <div id="envList">
+                <p class="loading">Chargement...</p>
+            </div>
+        </div>
+    </div>
+
+
+
+
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script src="/js/modeling/nodeverification.js"></script>
     <script src="/js/modeling/script.js"></script>
+
 
 </body>
 </html>

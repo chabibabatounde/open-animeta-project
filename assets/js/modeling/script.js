@@ -1,7 +1,7 @@
 /* ==========================================================================
-   ANIMETA GRAPH STUDIO
-   Architecture : IIFE + namespace public (window.GraphStudio)
-   ========================================================================== */
+ANIMETA GRAPH STUDIO
+Architecture : IIFE + namespace public (window.GraphStudio)
+========================================================================== */
 
 (function (window, $) {
     'use strict';
@@ -12,18 +12,81 @@
 
     const json_actions = `
     [
-        { "name": "Eat",        "id": "A", "subtype": "Eat",        "attributs": [{"name":"duration","type":"int"},{"name":"gap","type":"float"}] },
-        { "name": "GetCloser",  "id": "A", "subtype": "GetCloser",  "attributs": [{"name":"duration","type":"int"},{"name":"gap","type":"float"}] },
-        { "name": "Sleep",      "id": "A", "subtype": "Sleep",      "attributs": [{"name":"duration","type":"int"},{"name":"gap","type":"float"}] },
-        { "name": "RandomMove", "id": "A", "subtype": "RandomMove", "attributs": [{"name":"duration","type":"int"},{"name":"gap","type":"float"}] },
-        { "name": "RunAway",    "id": "A", "subtype": "RunAway",    "attributs": [{"name":"duration","type":"int"},{"name":"gap","type":"float"}] }
+        {
+            "name": "Eat",
+            "id": "A",
+            "subtype": "Eat",
+            "attributs": [
+                { "name": "duration", "type": "int" },
+                { "name": "gain", "type": "float" },
+                { "name": "kill", "type": "int" },
+                { "name": "move_coast", "type": "float" }
+            ]
+        },
+        {
+            "name": "GetCloser",
+            "id": "A",
+            "subtype": "GetCloser",
+            "attributs": [
+                { "name": "duration", "type": "int" },
+                { "name": "target", "type": "string" },
+                { "name": "max_attempt", "type": "int" }
+            ]
+        },
+        {
+            "name": "RandomMove",
+            "id": "A",
+            "subtype": "RandomMove",
+            "attributs": [
+                { "name": "duration", "type": "int" },
+                { "name": "move_probability", "type": "float" },
+                { "name": "max_velocity", "type": "string" },
+                { "name": "max_attempt", "type": "float" },
+                { "name": "lost", "type": "float" }
+            ]
+        },
+        {
+            "name": "Rest",
+            "id": "A",
+            "subtype": "Rest",
+            "attributs": [
+                { "name": "duration", "type": "int" }
+            ]
+        },
+        {
+            "name": "RunAway",
+            "id": "A",
+            "subtype": "RunAway",
+            "attributs": [
+                { "name": "duration", "type": "int" },
+                { "name": "move_coast", "type": "float" }
+            ]
+        },
+        {
+            "name": "Sleep",
+            "id": "A",
+            "subtype": "Sleep",
+            "attributs": [
+                { "name": "duration", "type": "int" },
+                { "name": "gain", "type": "float" }
+            ]
+        },
+        {
+            "name": "StayOnCourse",
+            "id": "A",
+            "subtype": "StayOnCourse",
+            "attributs": [
+                { "name": "duration", "type": "int" },
+                { "name": "acceleration", "type": "string" }
+            ]
+        }
     ]`;
 
     let actions = [];
     try {
         actions = JSON.parse(json_actions);
     } catch (e) {
-        console.error('[GraphStudio] JSON actions invalide :', e);
+        console.error('JSON actions invalide :', e);
         actions = [];
     }
 
@@ -60,7 +123,7 @@
         "D": ["T", "P"],
         "T": ["A"],
 
-        "PM": ["Ps", "Ds", "PT"],
+        "PM": ["Ps", "Ds", "PT", "T"],
 
         "PD": ["PT", "PK", "P"],
         "PT": ["A", "PA"],
@@ -70,12 +133,18 @@
 
     const connectionLimits = {
         "PM": { "PT": 1, "Ds": 1, "Ps": 1 },
+
+        "M": { "T": 1, "Ds": 1, "Ps": 1 },
+
         "P":  { "PM": 1 }
     };
 
     const incomingLimits = {
-        "M": 0, "Ps":1,  "Ds":1, "T":1,
-        "S": 1, "PD": 1, "D": 1, "A": 1,
+        "M": 0, "PM": 0, 
+        "Ps":1,  "Ds":1, "T":1,
+        "S": 1, 
+        "PD": 1, "D": 1, 
+        "A": 1,
         "PA": 1, "PK": 1, "PT": 1
     };
 
@@ -90,9 +159,9 @@
 
         const schema = [
             {
-                name: "action_type",
-                label: "Action type",
-                type: "select",
+                name: "action",
+                label: "A",
+                type: "text",
                 options: actions.map(a => a.subtype),
                 default: action.subtype,
                 readonly: true
@@ -146,6 +215,8 @@
         ],
         ...actionsSchema
     };
+
+
 
     /* ======================================================================
     4. UTILITAIRES
@@ -296,10 +367,14 @@
         $('#emptyHint').hide();
 
         const data = {};
-        (propertiesSchema[type] || []).forEach(f => { data[f.name] = f.default; });
+
+
+        (propertiesSchema[type] || []).forEach(f => { data[f.name] = f.default;});
+
         data.name = label;
 
         graphState.nodes[id] = { id: id, type: type, x: x, y: y, data: data };
+
         renderNode(graphState.nodes[id]);
         log('Component "<strong>' + escapeHtml(label) + '</strong>" added to the graph', 'success');
         return id;
@@ -639,7 +714,7 @@
             $('#projectModal').fadeOut();
         })
         .fail(function (xhr, status, error) {
-            console.error('[GraphStudio] HTTP error:', error);
+            console.error('HTTP error:', error);
             showToast('Failed to load project', 'error');
         });
     }
@@ -652,23 +727,25 @@
     function verifyNode(nodeDetails) {
         const t = genericType(nodeDetails.type);
 
-        // a) Les propriétés obligatoires ne doivent pas être vides
-        const schema = propertiesSchema[nodeDetails.type] || [];
-        const emptyFields = schema
-            .filter(f => !f.readonly)
-            .filter(f => {
-                const v = nodeDetails.properties[f.name];
-                return v === undefined || v === null || String(v).trim() === '';
-            })
-            .map(f => f.label || f.name);
+            // a) Les propriétés obligatoires ne doivent pas être vides
+            const schema = propertiesSchema[nodeDetails.type] || [];
 
-        if (emptyFields.length) {
-            return 'Node "' + (nodeDetails.properties.name || nodeDetails.id) +
-                   '" (' + t + '): empty field(s) → ' + emptyFields.join(', ');
-        }
+
+            const emptyFields = schema
+                .filter(f => !f.readonly)
+                .filter(f => {
+                    const v = nodeDetails.properties[f.name];
+                    return v === undefined || v === null || String(v).trim() === '';
+                })
+                .map(f => f.label || f.name);
+            
+            if (emptyFields.length) {
+                return 'Node "' + (nodeDetails.properties.name || nodeDetails.id) +
+                    '" (' + t + '): empty field(s) → ' + emptyFields.join(', ');
+            }
 
         // b) Un nœud non-racine doit avoir un parent (PM = racine)
-        if (t !== 'PM' && nodeDetails.incomingConnections.length === 0) {
+        if ((t !== 'PM' && t !== 'M') && (nodeDetails.incomingConnections.length === 0) ){
             return 'Node "' + (nodeDetails.properties.name || nodeDetails.id) +
                    '" (' + t + '): no incoming connection (orphan node)';
         }
@@ -715,7 +792,7 @@
                     toType: graphState.nodes[c.to].type
                 }))
             };
-
+            
             const err = verifyNode(details);
             if (err) errors.push(err);
         });
@@ -987,6 +1064,7 @@
                 contentType: 'application/json',
                 data: JSON.stringify(payload)
             })
+            
             .done(function () {
                 loadedModel.modelName = loadedModel.filename;
                 log('Graph saved — ' + Object.keys(graphState.nodes).length + ' nodes, ' +
@@ -994,7 +1072,7 @@
                 showToast('Save successful!', 'success');
             })
             .fail(function (xhr) {
-                console.error('[GraphStudio] Save failed:', xhr.status, xhr.responseText);
+                console.error('Save failed:', xhr.status, xhr.responseText);
                 showToast('Save Failed!', 'error');
             });
         });
@@ -1030,7 +1108,7 @@
                     $projectList.empty().append($ul);
                 })
                 .fail(function (xhr, status, error) {
-                    console.error('[GraphStudio] HTTP error:', error);
+                    console.error('HTTP error:', error);
                     $projectList.html('<p class="error">Impossible de charger les projets.</p>');
                 });
         });
@@ -1048,6 +1126,20 @@
         $('#toggleRightPanel').on('click', function () { $('#rightPanel').slideToggle(); });
     }
 
+
+
+    const $envmodal = $('#envModal');
+    const $envList = $('#envList');
+
+    $('#btnOpenEnv').on('click', function (e) {
+        alert("jdj");
+        e.preventDefault();
+        $envmodal.fadeIn();
+    });
+    
+
+
+
     /* ======================================================================
        12. INITIALISATION
        ====================================================================== */
@@ -1055,7 +1147,7 @@
     function init() {
         $canvas = $('#graphCanvas');
         if (!$canvas.length) {
-            console.error('[GraphStudio] #graphCanvas introuvable — initialisation annulée.');
+            console.error('#graphCanvas introuvable — initialisation annulée.');
             return;
         }
 

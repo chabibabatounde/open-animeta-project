@@ -46,6 +46,13 @@ function verifyNode(node){
                     }
                     break;
 
+                case 'duration':
+                    if(value==''){
+                        result = "You must define duration value for "+node.type;
+                    }
+                    break;
+
+
                 case 'raduis':
                     if(value==''){
                         result = "You must define a radius for "+node.type;
